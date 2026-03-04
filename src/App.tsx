@@ -21,8 +21,8 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import VisuMedLanding from "./pages/LandingPage";
 import PacientesSearch from "./pages/PatientSearch";
-import ChatBot from "./pages/ChatBot";
 import NewReport from "./pages/NewReport";
+import { ROUTES } from "./routes/routes";
 
 
 export default function App() {
@@ -32,47 +32,48 @@ export default function App() {
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
-          <Route path="/ChatBot" element={<ChatBot />} />
+          
           <Route element={<AppLayout />}>
-            <Route path="/home" element={<Home />} />
+            <Route path={ROUTES.APP.HOME} element={<Home />} />
 
             {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/patient-registry" element={<PatientRegistry />} />
-            
+            <Route path={ROUTES.APP.PROFILE} element={<UserProfiles />} />
+            <Route path={ROUTES.APP.CALENDAR} element={<Calendar />} />
+            <Route path={ROUTES.APP.PATIENT_REGISTRY} element={<PatientRegistry />} />
+
             {/* Pages */}
-            <Route path="/blank" element={<Blank />} />
-            <Route path="/search-patient" element={<PacientesSearch />} />
-            <Route path="/new-report" element={<NewReport />} />
+            <Route path={ROUTES.APP.BLANK} element={<Blank />} />
+            <Route path={ROUTES.APP.SEARCH_PATIENT} element={<PacientesSearch />} />
+            <Route path={ROUTES.APP.NEW_REPORT} element={<NewReport />} />
 
             {/* Forms */}
-            <Route path="/form-elements" element={<FormElements />} />
+            <Route path={ROUTES.APP.FORMS.ELEMENTS} element={<FormElements />} />
 
             {/* Tables */}
-            <Route path="/basic-tables" element={<BasicTables />} />
+            <Route path={ROUTES.APP.TABLES.BASIC} element={<BasicTables />} />
 
             {/* Ui Elements */}
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/avatars" element={<Avatars />} />
-            <Route path="/badge" element={<Badges />} />
-            <Route path="/buttons" element={<Buttons />} />
-            <Route path="/images" element={<Images />} />
-            <Route path="/videos" element={<Videos />} />
+            <Route path={ROUTES.APP.UI.ALERTS} element={<Alerts />} />
+            <Route path={ROUTES.APP.UI.AVATARS} element={<Avatars />} />
+            <Route path={ROUTES.APP.UI.BADGE} element={<Badges />} />
+            <Route path={ROUTES.APP.UI.BUTTONS} element={<Buttons />} />
+            <Route path={ROUTES.APP.UI.IMAGES} element={<Images />} />
+            <Route path={ROUTES.APP.UI.VIDEOS} element={<Videos />} />
 
             {/* Charts */}
-            <Route path="/line-chart" element={<LineChart />} />
-            <Route path="/bar-chart" element={<BarChart />} />
+            <Route path={ROUTES.APP.CHARTS.LINE} element={<LineChart />} />
+            <Route path={ROUTES.APP.CHARTS.BAR} element={<BarChart />} />
           </Route>
 
-          {/* Auth Layout */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
+          {/* Auth */}
+          <Route path={ROUTES.AUTH.SIGN_IN} element={<SignIn />} />
+          <Route path={ROUTES.AUTH.SIGN_UP} element={<SignUp />} />
 
-          <Route path="/" element={<VisuMedLanding />} />
+          {/* Landing */}
+          <Route path={ROUTES.ROOT} element={<VisuMedLanding />} />
 
-          {/* Fallback Route */}
-          <Route path="*" element={<NotFound />} />
+          {/* Fallback */}
+          <Route path={ROUTES.NOT_FOUND} element={<NotFound />} />
         </Routes>
       </Router>
     </>

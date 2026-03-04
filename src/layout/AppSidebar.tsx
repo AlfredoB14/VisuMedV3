@@ -9,7 +9,6 @@ import {
   HorizontaLDots,
   ListIcon,
 } from "../icons";
-import { Bot } from 'lucide-react';
 
 import { useSidebar } from "../context/SidebarContext";
 
@@ -41,13 +40,6 @@ const navItems: NavItem[] = [
   },
 ];
 
-const othersItems: NavItem[] = [
-  {
-    icon: <Bot />,
-    name: "AI Assistant",
-    path: "/ChatBot",
-  },
-];
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen } = useSidebar();
@@ -71,7 +63,7 @@ const AppSidebar: React.FC = () => {
   useEffect(() => {
     let submenuMatched = false;
     ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
+      const items = navItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
@@ -245,10 +237,8 @@ const AppSidebar: React.FC = () => {
             <>
               <img
                 className="dark:hidden"
-                src="/images/logo/VisuMedLogo.png"
+                src="/images/logo/VisuMedLogoSide.png"
                 alt="Logo"
-                width={300}
-                height={40}
               />
               <img
                 className="hidden dark:block"
@@ -283,19 +273,6 @@ const AppSidebar: React.FC = () => {
                 )}
               </h2>
               {renderMenuItems(navItems, "main")}
-            </div>
-            <div className="">
-              <h2
-                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${!isExpanded ? "lg:justify-center" : "justify-start"
-                  }`}
-              >
-                {isExpanded || isMobileOpen ? (
-                  "Tu asistente virtual"
-                ) : (
-                  <HorizontaLDots />
-                )}
-              </h2>
-              {renderMenuItems(othersItems, "others")}
             </div>
           </div>
         </nav>

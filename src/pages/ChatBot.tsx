@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, X, ChevronDown, ChevronUp, PlusCircle } from 'lucide-react';
+import { Send, X, ChevronDown, ChevronUp, PlusCircle, Bot } from 'lucide-react';
+import { getBotResponse } from '../utils/ChatBotResponses';
 
 interface Message {
   id: string;
@@ -43,35 +44,13 @@ const ChatBot: React.FC = () => {
     setMessages(prev => [...prev, userMessage]);
     setMessage('');
 
-    // Simulate bot response after a short delay
     setTimeout(() => {
-      let botResponse = '';
       
-      // Simple response logic based on keywords
       const lowerCaseMessage = message.toLowerCase();
-      if (lowerCaseMessage.includes('estudio') || lowerCaseMessage.includes('radiografía') || 
-          lowerCaseMessage.includes('tomografía') || lowerCaseMessage.includes('resonancia')) {
-        botResponse = 'Puedes filtrar por tipo de estudio usando el selector en la barra de búsqueda.';
-      } else if (lowerCaseMessage.includes('paciente') || lowerCaseMessage.includes('buscar')) {
-        botResponse = 'Para buscar un paciente, escribe su nombre o ID en el campo de búsqueda principal.';
-      } else if (lowerCaseMessage.includes('filtro') || lowerCaseMessage.includes('avanzado')) {
-        botResponse = 'Haz clic en "Mostrar filtros avanzados" para acceder a más opciones de filtrado como fecha y médico.';
-      } else if (lowerCaseMessage.includes('fecha')) {
-        botResponse = 'Puedes filtrar por fecha usando los filtros avanzados. Haz clic en "Mostrar filtros avanzados".';
-      } else if (lowerCaseMessage.includes('pendiente') || lowerCaseMessage.includes('nuevo') || 
-                lowerCaseMessage.includes('revisado') || lowerCaseMessage.includes('estado')) {
-        botResponse = 'Puedes filtrar por estado del estudio seleccionando la opción correspondiente en el menú desplegable.';
-      } else if (lowerCaseMessage.includes('hola') || lowerCaseMessage.includes('saludos')) {
-        botResponse = '¡Hola! Soy el asistente virtual del sistema. ¿En qué puedo ayudarte hoy?';
-      } else if (lowerCaseMessage.includes('ayuda') || lowerCaseMessage.includes('ayúdame')) {
-        botResponse = 'Puedo ayudarte con:\n- Búsqueda de pacientes\n- Filtrado de estudios\n- Navegación del sistema\n- Información sobre estados de los estudios';
-      } else {
-        botResponse = 'No estoy seguro de cómo ayudarte con eso. ¿Podrías reformular tu pregunta? Puedo ayudarte con búsquedas, filtros o información sobre el sistema.';
-      }
 
       const newBotMessage: Message = {
         id: Date.now().toString(),
-        text: botResponse,
+        text: getBotResponse(lowerCaseMessage),
         sender: 'bot',
         timestamp: new Date()
       };
@@ -125,14 +104,14 @@ const ChatBot: React.FC = () => {
         className="fixed bottom-6 right-6 bg-orange-500 text-white p-4 rounded-full shadow-lg hover:bg-orange-600 transition-all duration-200 z-50"
         onClick={toggleChat}
       >
-        {isOpen ? <X size={24} /> : <Send size={24} />}
+        {isOpen ? <X size={24} /> : <Bot size={24} />}
       </button>
 
       {/* Chat window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 bg-white rounded-lg shadow-xl w-96 z-40 transition-all duration-300 flex flex-col border border-gray-200">
+        <div className="fixed bottom-24 right-6 bg-white rounded-lg shadow-2xl w-96 z-40 transition-all duration-300 flex flex-col">
           {/* Chat header */}
-          <div className="bg-green-600 text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
+          <div className="bg-gradient-to-r from-[#009975] to-[#007960] text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
             <h3 className="font-bold">Asistente Virtual</h3>
             <div className="flex gap-2">
               <button onClick={toggleMinimize} className="hover:bg-green-700 p-1 rounded">
