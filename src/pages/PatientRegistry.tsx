@@ -26,18 +26,18 @@ const PatientRegistry: React.FC = () => {
     };
 
     return (
-        <div>
+        <div className="space-y-6">
             <PageMeta
                 title="VisuMed | Registro de Paciente"
                 description="Formulario para registrar un nuevo paciente en el sistema."
             />
             <PageBreadcrumb pageTitle="Registro de Nuevo Paciente" />
-            <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-5 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 lg:p-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                     {/* Form Section */}
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400">
                                 Nombre
                             </label>
                             <input
@@ -45,12 +45,12 @@ const PatientRegistry: React.FC = () => {
                                 name="firstName"
                                 value={formData.firstName}
                                 onChange={handleInputChange}
-                                className="w-full mt-1 p-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-900 outline-none transition focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                                 required
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400">
                                 Apellidos
                             </label>
                             <input
@@ -58,12 +58,12 @@ const PatientRegistry: React.FC = () => {
                                 name="lastName"
                                 value={formData.lastName}
                                 onChange={handleInputChange}
-                                className="w-full mt-1 p-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-900 outline-none transition focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                                 required
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400">
                                 Estado
                             </label>
                             <input
@@ -71,12 +71,12 @@ const PatientRegistry: React.FC = () => {
                                 name="lastName"
                                 value={formData.state}
                                 onChange={handleInputChange}
-                                className="w-full mt-1 p-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-900 outline-none transition focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                                 required
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400">
                                 Código Postal
                             </label>
                             <input
@@ -84,12 +84,12 @@ const PatientRegistry: React.FC = () => {
                                 name="postalCode"
                                 value={formData.postalCode}
                                 onChange={handleInputChange}
-                                className="w-full mt-1 p-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-900 outline-none transition focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                                 required
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400">
                                 Correo Electrónico
                             </label>
                             <input
@@ -97,11 +97,11 @@ const PatientRegistry: React.FC = () => {
                                 name="email"
                                 value={formData.email}
                                 onChange={handleInputChange}
-                                className="w-full mt-1 p-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-900 outline-none transition focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400">
                                 Teléfono
                             </label>
                             <input
@@ -109,11 +109,11 @@ const PatientRegistry: React.FC = () => {
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleInputChange}
-                                className="w-full mt-1 p-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-900 outline-none transition focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400">
                                 Fecha de Nacimiento
                             </label>
                             <input
@@ -121,11 +121,11 @@ const PatientRegistry: React.FC = () => {
                                 name="birthDate"
                                 value={formData.birthDate}
                                 onChange={handleInputChange}
-                                className="w-full mt-1 p-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-900 outline-none transition focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400">
                                 Dirección
                             </label>
                             <input
@@ -133,12 +133,12 @@ const PatientRegistry: React.FC = () => {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
-                                className="w-full mt-1 p-2 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+                                className="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-900 outline-none transition focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                             />
                         </div>
                         <button
                             type="submit"
-                            className="w-full py-2 px-4 bg-emerald-500 text-white font-medium rounded-lg hover:bg-emerald-600 transition"
+                            className="w-full rounded-full bg-[#26a69a] px-4 py-3 font-medium text-white transition hover:bg-[#1f8c81]"
                         >
                             Registrar Paciente
                         </button>
@@ -147,9 +147,9 @@ const PatientRegistry: React.FC = () => {
                     {/* Image Section */}
                     <div className="hidden lg:flex items-center justify-center">
                         <img
-                            src="public/images/Doctor.jpg"
+                            src="/images/Doctor.jpg"
                             alt="Registro de Paciente"
-                            className="max-w-md rounded-lg shadow-lg"
+                            className="max-w-md rounded-[2rem] shadow-2xl"
                         />
                     </div>
                 </div>

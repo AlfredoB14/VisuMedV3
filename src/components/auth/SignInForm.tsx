@@ -15,47 +15,47 @@ export default function SignInForm() {
 
   return (
     <div className="flex flex-col flex-1">
-      <div className="w-full max-w-md pt-10 mx-auto">
+      <div className="mx-auto w-full max-w-md pt-10">
         <Link
           to="/"
-          className="inline-flex items-center text-sm text-[#009975] transition-colors hover:text-[#e98232]"
+          className="inline-flex items-center text-sm text-[#26a69a] transition-colors hover:text-[#1f8c81]"
         >
           <ChevronLeftIcon className="size-5" />
           Regresa al inicio
         </Link>
       </div>
-      <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
+      <div className="mx-auto flex w-full max-w-md flex-col justify-center flex-1">
         <div>
           <div className="mb-8">
-            <h1 className="mb-3 font-bold text-3xl text-[#009975]">
+            <h1 className="mb-3 font-display text-3xl font-extrabold text-slate-900 dark:text-white">
               Iniciar Sesión
             </h1>
-            <p className="text-gray-600">
+            <p className="text-slate-600 dark:text-slate-400">
               ¡Ingresa tus credenciales para acceder a tu cuenta!
             </p>
           </div>
           
-          <form className="bg-white p-8 rounded-lg shadow-md">
+          <form className="rounded-[2rem] border border-slate-200 bg-white/85 p-8 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
             <div className="space-y-6">
               <div>
-                <Label className="text-[#009975] font-medium">
-                  Correo electrónico <span className="text-[#e98232]">*</span>
+                <Label className="font-medium text-[#26a69a]">
+                  Correo electrónico <span className="text-[#26a69a]">*</span>
                 </Label>
                 <Input 
                   placeholder="correo@ejemplo.com"
-                  className="mt-2 w-full p-3 border border-gray-300 rounded-md focus:border-[#009975] focus:ring-1 focus:ring-[#009975]"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 p-3 focus:border-[#26a69a] focus:ring-1 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40"
                 />
               </div>
 
               <div>
-                <Label className="text-[#009975] font-medium">
-                  Contraseña <span className="text-[#e98232]">*</span>
+                <Label className="font-medium text-[#26a69a]">
+                  Contraseña <span className="text-[#26a69a]">*</span>
                 </Label>
                 <div className="relative">
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Ingresa tu contraseña"
-                    className="mt-2 w-full p-3 border border-gray-300 rounded-md focus:border-[#009975] focus:ring-1 focus:ring-[#009975]"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 p-3 focus:border-[#26a69a] focus:ring-1 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40"
                   />
                   <span
                     onClick={() => setShowPassword(!showPassword)}
@@ -73,7 +73,7 @@ export default function SignInForm() {
               <div className="flex items-center justify-end">
                 <Link
                   to="/reset-password"
-                  className="text-sm text-[#009975] hover:text-[#e98232] transition-colors"
+                  className="text-sm text-[#26a69a] transition-colors hover:text-[#1f8c81]"
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>
@@ -82,7 +82,7 @@ export default function SignInForm() {
               <button 
                 type="button"
                 onClick={handleLogin}
-                className="w-full bg-[#009975] hover:bg-[#e98232] text-white font-semibold py-3 rounded-md transition-colors"
+                className="w-full rounded-full bg-[#26a69a] py-3 font-semibold text-white transition-colors hover:bg-[#1f8c81]"
               >
                 Iniciar Sesión
               </button>
@@ -90,11 +90,11 @@ export default function SignInForm() {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
+            <p className="text-slate-600 dark:text-slate-400">
               ¿No tienes una cuenta? {" "}
               <Link
                 to="/signup"
-                className="text-[#009975] hover:text-[#e98232] font-medium transition-colors"
+                className="font-medium text-[#26a69a] transition-colors hover:text-[#1f8c81]"
               >
                 Regístrate
               </Link>

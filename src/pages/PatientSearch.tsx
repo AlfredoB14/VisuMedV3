@@ -49,18 +49,18 @@ const PacientesSearch: React.FC = () => {
         description="Buscador de pacientes para médicos"
       />
       <PageBreadcrumb pageTitle="Buscador de Pacientes" />
-      <div className="max-w-6xl mx-auto">
+      <div className="mx-auto max-w-6xl space-y-6">
         {/* Search Form */}
-        <div className="bg-white rounded-lg p-6 shadow-md mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
+        <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+          <div className="flex flex-col gap-4 md:flex-row">
             <div className="relative flex-grow">
               <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                <Search size={18} className="text-gray-400" />
+                <Search size={18} className="text-slate-400" />
               </div>
               <input
                 type="text"
                 placeholder="Buscar por nombre, ID..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full"
+                className="w-full rounded-full border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-slate-900 outline-none transition focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -68,7 +68,7 @@ const PacientesSearch: React.FC = () => {
             
             <div className="relative min-w-[200px]">
               <select
-                className="w-full appearance-none border border-gray-300 rounded-md px-4 py-2 pr-8 bg-white"
+                className="w-full appearance-none rounded-full border border-slate-200 bg-slate-50 px-4 py-3 pr-8 text-slate-900 outline-none transition focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                 value={selectedStudyType}
                 onChange={(e) => setSelectedStudyType(e.target.value)}
               >
@@ -77,17 +77,17 @@ const PacientesSearch: React.FC = () => {
                 ))}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <ChevronDown size={18} className="text-gray-400" />
+                <ChevronDown size={18} className="text-slate-400" />
               </div>
             </div>
             
-            <button className="bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-6 rounded-md transition duration-200">
+            <button className="rounded-full bg-[#26a69a] px-6 py-3 font-medium text-white transition hover:bg-[#1f8c81]">
               Buscar
             </button>
           </div>
 
           <button
-            className="mt-4 flex items-center text-green-600 font-medium text-sm"
+            className="mt-4 flex items-center text-sm font-medium text-[#26a69a]"
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
           >
             Mostrar filtros avanzados
@@ -99,10 +99,10 @@ const PacientesSearch: React.FC = () => {
           </button>
           
           {showAdvancedFilters && (
-            <div className="mt-4 p-4 border border-gray-200 rounded-md grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 p-4 dark:border-slate-800">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Médico</label>
-                <select className="w-full border border-gray-300 rounded-md px-4 py-2">
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-400">Médico</label>
+                <select className="w-full rounded-full border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white">
                   <option>Todos los médicos</option>
                   <option>Dr. García</option>
                   <option>Dra. Rodríguez</option>
@@ -110,8 +110,8 @@ const PacientesSearch: React.FC = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Centro médico</label>
-                <select className="w-full border border-gray-300 rounded-md px-4 py-2">
+                <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-400">Centro médico</label>
+                <select className="w-full rounded-full border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white">
                   <option>Todos los centros</option>
                   <option>Centro A</option>
                   <option>Centro B</option>
@@ -123,11 +123,11 @@ const PacientesSearch: React.FC = () => {
         </div>
         
         {/* Results Table */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-[#009975]">Resultados</h2>
-              <span className="text-gray-500 font-medium">
+        <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white/85 shadow-xl dark:border-slate-800 dark:bg-slate-900/80">
+          <div className="border-b border-slate-200 p-6 dark:border-slate-800">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-[#26a69a]">Resultados</h2>
+              <span className="font-medium text-slate-500">
                 {filteredPatients.length} resultados encontrados
               </span>
             </div>
@@ -136,28 +136,28 @@ const PacientesSearch: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Paciente</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Último estudio</th>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-500 uppercase tracking-wider">Detalles</th>
+                <tr className="bg-slate-50 dark:bg-slate-950/40">
+                  <th className="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider text-slate-500">Paciente</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium uppercase tracking-wider text-slate-500">Último estudio</th>
+                  <th className="px-6 py-3 text-right text-sm font-medium uppercase tracking-wider text-slate-500">Detalles</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
                 {filteredPatients.map((patient) => (
                   <tr 
                     key={patient.id} 
-                    className="hover:bg-gray-50 transition duration-150"
+                    className="transition duration-150 hover:bg-slate-50 dark:hover:bg-slate-950/40"
                   >
                     <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">{patient.name}</div>
-                      <div className="text-sm text-gray-500">ID: {patient.id}</div>
+                      <div className="font-medium text-slate-900 dark:text-white">{patient.name}</div>
+                      <div className="text-sm text-slate-500">ID: {patient.id}</div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{patient.lastStudy}</td>
+                    <td className="px-6 py-4 text-sm text-slate-500">{patient.lastStudy}</td>
                     <td className="px-6 py-4 text-right">
                       <button 
                         // onClick={() => navigate(`/pacientes/${patient.id}`)}
                         onClick={() => navigate(`/search-patient`)}
-                        className="text-green-600 hover:text-green-900 hover:bg-green-50 border border-green-600 rounded-md px-4 py-1 text-sm font-medium transition duration-150"
+                        className="rounded-full border border-[#26a69a] px-4 py-2 text-sm font-medium text-[#26a69a] transition duration-150 hover:bg-[#26a69a] hover:text-white"
                       >
                         Ver detalles →
                       </button>
@@ -170,43 +170,43 @@ const PacientesSearch: React.FC = () => {
           
           {filteredPatients.length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500">No se encontraron pacientes con los criterios de búsqueda.</p>
+              <p className="text-slate-500">No se encontraron pacientes con los criterios de búsqueda.</p>
             </div>
           )}
           
           {filteredPatients.length > 0 && (
-            <div className="px-6 py-4 border-t border-gray-200">
+            <div className="border-t border-slate-200 px-6 py-4 dark:border-slate-800">
               <nav className="flex items-center justify-between">
                 <div className="flex-1 flex justify-between sm:hidden">
-                  <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                  <button className="relative inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-300">
                     Anterior
                   </button>
-                  <button className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                  <button className="ml-3 relative inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-300">
                     Siguiente
                   </button>
                 </div>
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-slate-700 dark:text-slate-400">
                       Mostrando <span className="font-medium">1</span> a <span className="font-medium">{filteredPatients.length}</span> de <span className="font-medium">{patients.length}</span> resultados
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                      <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    <nav className="relative z-0 inline-flex -space-x-px overflow-hidden rounded-full border border-slate-200 shadow-sm dark:border-slate-700" aria-label="Pagination">
+                      <button className="relative inline-flex items-center rounded-l-full border border-slate-200 bg-white px-2 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950/40">
                         <span className="sr-only">Anterior</span>
                         &larr;
                       </button>
-                      <button className="bg-green-50 border-green-500 text-green-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                      <button className="relative inline-flex items-center border border-[#26a69a] bg-[#26a69a]/10 px-4 py-2 text-sm font-medium text-[#26a69a]">
                         1
                       </button>
-                      <button className="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                      <button className="relative inline-flex items-center border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950/40">
                         2
                       </button>
-                      <button className="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                      <button className="relative inline-flex items-center border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950/40">
                         3
                       </button>
-                      <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                      <button className="relative inline-flex items-center rounded-r-full border border-slate-200 bg-white px-2 py-2 text-sm font-medium text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950/40">
                         <span className="sr-only">Siguiente</span>
                         &rarr;
                       </button>

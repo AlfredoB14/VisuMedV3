@@ -278,6 +278,29 @@ layer(base);
     @apply bg-gray-200 rounded-full dark:bg-gray-700;
   }
 }
+
+@layer utilities {
+  .app-density {
+    font-size: 14px;
+  }
+
+  .app-density .text-2xl {
+    font-size: 1.35rem;
+    line-height: 1.9rem;
+  }
+
+  .app-density .text-xl {
+    font-size: 1.125rem;
+    line-height: 1.6rem;
+  }
+
+  .app-density input,
+  .app-density select,
+  .app-density textarea {
+    font-size: 13px;
+  }
+}
+
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #344054;
 }
