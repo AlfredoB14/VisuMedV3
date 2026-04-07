@@ -42,17 +42,17 @@ export default function Home() {
 
         <div className="col-span-12 md:col-span-8 space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200 bg-white/85 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+            <div className="rounded-2xl border border-slate-200 bg-white/85 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 shadow-xl backdrop-blur">
               <h3 className="mb-2 text-sm text-slate-500">Citas de hoy</h3>
               <p className="text-2xl font-bold text-[#26a69a]">
                 {todaySchedule.filter((item) => item.type === "appointment").length}
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white/85 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+            <div className="rounded-2xl border border-slate-200 bg-white/85 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 shadow-xl backdrop-blur">
               <h3 className="mb-2 text-sm text-slate-500">Próxima cita</h3>
               <p className="text-2xl font-bold text-[#26a69a]">10:00</p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-white/85 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+            <div className="rounded-2xl border border-slate-200 bg-white/85 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 shadow-xl backdrop-blur">
               <h3 className="mb-2 text-sm text-slate-500">Tiempo disponible</h3>
               <p className="text-2xl font-bold text-[#26a69a]">4h 30m</p>
             </div>
