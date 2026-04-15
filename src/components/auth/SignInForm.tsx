@@ -119,6 +119,7 @@ export default function SignInForm() {
               <button 
                 type="button"
                 onClick={handleLogin}
+                disabled={loading}
                 className="w-full rounded-full bg-[#26a69a] py-3 font-semibold text-white transition-colors hover:bg-[#1f8c81]"
               >
                 Iniciar Sesión
