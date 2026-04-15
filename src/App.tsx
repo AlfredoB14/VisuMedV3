@@ -23,6 +23,7 @@ import VisuMedLanding from "./pages/LandingPage";
 import PacientesSearch from "./pages/PatientSearch";
 import NewReport from "./pages/NewReport";
 import { ROUTES } from "./routes/routes";
+import { ProtectedRoute } from "./routes/protected-route";
 
 
 export default function App() {
@@ -32,37 +33,36 @@ export default function App() {
         <ScrollToTop />
         <Routes>
           {/* Dashboard Layout */}
-          
-          <Route element={<AppLayout />}>
-            <Route path={ROUTES.APP.HOME} element={<Home />} />
+          <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+            <Route path={ROUTES.APP.HOME} element={<ProtectedRoute><Home /></ProtectedRoute>} />
 
             {/* Others Page */}
-            <Route path={ROUTES.APP.PROFILE} element={<UserProfiles />} />
-            <Route path={ROUTES.APP.CALENDAR} element={<Calendar />} />
-            <Route path={ROUTES.APP.PATIENT_REGISTRY} element={<PatientRegistry />} />
+            <Route path={ROUTES.APP.PROFILE} element={<ProtectedRoute><UserProfiles /></ProtectedRoute>} />
+            <Route path={ROUTES.APP.CALENDAR} element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+            <Route path={ROUTES.APP.PATIENT_REGISTRY} element={<ProtectedRoute><PatientRegistry /></ProtectedRoute>} />
 
             {/* Pages */}
-            <Route path={ROUTES.APP.BLANK} element={<Blank />} />
-            <Route path={ROUTES.APP.SEARCH_PATIENT} element={<PacientesSearch />} />
-            <Route path={ROUTES.APP.NEW_REPORT} element={<NewReport />} />
+            <Route path={ROUTES.APP.BLANK} element={<ProtectedRoute><Blank /></ProtectedRoute>} />
+            <Route path={ROUTES.APP.SEARCH_PATIENT} element={<ProtectedRoute><PacientesSearch /></ProtectedRoute>} />
+            <Route path={ROUTES.APP.NEW_REPORT} element={<ProtectedRoute><NewReport /></ProtectedRoute>} />
 
             {/* Forms */}
-            <Route path={ROUTES.APP.FORMS.ELEMENTS} element={<FormElements />} />
+            <Route path={ROUTES.APP.FORMS.ELEMENTS} element={<ProtectedRoute><FormElements /></ProtectedRoute>} />
 
             {/* Tables */}
-            <Route path={ROUTES.APP.TABLES.BASIC} element={<BasicTables />} />
+            <Route path={ROUTES.APP.TABLES.BASIC} element={<ProtectedRoute><BasicTables /></ProtectedRoute>} />
 
             {/* Ui Elements */}
-            <Route path={ROUTES.APP.UI.ALERTS} element={<Alerts />} />
-            <Route path={ROUTES.APP.UI.AVATARS} element={<Avatars />} />
-            <Route path={ROUTES.APP.UI.BADGE} element={<Badges />} />
-            <Route path={ROUTES.APP.UI.BUTTONS} element={<Buttons />} />
-            <Route path={ROUTES.APP.UI.IMAGES} element={<Images />} />
-            <Route path={ROUTES.APP.UI.VIDEOS} element={<Videos />} />
+            <Route path={ROUTES.APP.UI.ALERTS} element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
+            <Route path={ROUTES.APP.UI.AVATARS} element={<ProtectedRoute><Avatars /></ProtectedRoute>} />
+            <Route path={ROUTES.APP.UI.BADGE} element={<ProtectedRoute><Badges /></ProtectedRoute>} />
+            <Route path={ROUTES.APP.UI.BUTTONS} element={<ProtectedRoute><Buttons /></ProtectedRoute>} />
+            <Route path={ROUTES.APP.UI.IMAGES} element={<ProtectedRoute><Images /></ProtectedRoute>} />
+            <Route path={ROUTES.APP.UI.VIDEOS} element={<ProtectedRoute><Videos /></ProtectedRoute>} />
 
             {/* Charts */}
-            <Route path={ROUTES.APP.CHARTS.LINE} element={<LineChart />} />
-            <Route path={ROUTES.APP.CHARTS.BAR} element={<BarChart />} />
+            <Route path={ROUTES.APP.CHARTS.LINE} element={<ProtectedRoute><LineChart /></ProtectedRoute>} />
+            <Route path={ROUTES.APP.CHARTS.BAR} element={<ProtectedRoute><BarChart /></ProtectedRoute>} />
           </Route>
 
           {/* Auth */}

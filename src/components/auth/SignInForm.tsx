@@ -4,13 +4,46 @@ import { useNavigate } from "react-router";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
+import { ROUTES } from "../../routes/routes";
+import { useAppDispatch } from "../../redux/hooks";
+import { api } from "../../services/instance";
+import { setAuthState } from "../../redux/auth/auth.slice";
 
 export default function SignInForm() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  const handleLogin = () => {
-    navigate("/home");
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await api.post(
+        "/doctors/login/",
+        {
+          email: formData.email,
+          password: formData.password,
+        },
+      );
+
+      dispatch(setAuthState({ isAuthenticated: true, doctor: response.data.doctor }));
+      navigate(ROUTES.APP.HOME);
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message ||
+        "No se pudo iniciar sesión. Verifica tus credenciales.";
+      console.log(errorMessage);
+      setFormData({
+        email: "",
+        password: "",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -20,7 +53,7 @@ export default function SignInForm() {
           to="/"
           className="inline-flex items-center text-sm text-[#26a69a] transition-colors hover:text-[#1f8c81]"
         >
-          <ChevronLeftIcon className="size-5" />
+          <ChevronLeftIcon />
           Regresa al inicio
         </Link>
       </div>
@@ -44,6 +77,8 @@ export default function SignInForm() {
                 <Input 
                   placeholder="correo@ejemplo.com"
                   className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 p-3 focus:border-[#26a69a] focus:ring-1 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 />
               </div>
 
@@ -56,15 +91,17 @@ export default function SignInForm() {
                     type={showPassword ? "text" : "password"}
                     placeholder="Ingresa tu contraseña"
                     className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 p-3 focus:border-[#26a69a] focus:ring-1 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   />
                   <span
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
                   >
                     {showPassword ? (
-                      <EyeIcon className="fill-gray-500 size-5" />
+                      <EyeIcon />
                     ) : (
-                      <EyeCloseIcon className="fill-gray-500 size-5" />
+                      <EyeCloseIcon />
                     )}
                   </span>
                 </div>
@@ -82,6 +119,7 @@ export default function SignInForm() {
               <button 
                 type="button"
                 onClick={handleLogin}
+                disabled={loading}
                 className="w-full rounded-full bg-[#26a69a] py-3 font-semibold text-white transition-colors hover:bg-[#1f8c81]"
               >
                 Iniciar Sesión
