@@ -7,10 +7,12 @@ import {
   
   import { doctorsSlice } from "./doctors/doctors.slice";
 import authSlice from "./auth/auth.slice";
-  
+import { patientsSlice } from "./patients/patients.slice";
+
   const appReducer = combineReducers({
     doctors: doctorsSlice.reducer,
     auth: authSlice,
+    patients: patientsSlice.reducer,
   });
   
   export const rootReducer = (state: any, action: Action<string>) => {

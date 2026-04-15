@@ -1,32 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import PatientHistory from "./components/patientHistory";
+import { RootState } from "../../redux/store";
+import { useSelector } from "react-redux";
+import { getPatients } from "../../redux/patients/patients.action";
+import { useAppDispatch } from "../../redux/hooks";
+import { Patient } from "../../redux/patients/types/Patients.interface";
 
-interface Patient {
-  id: number;
-  name: string;
-  age: number;
-  registrationDate: string;
-  lastConsultation: string;
-  avatar: string;
-}
 
 export default function FormElements() {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-
-  const patients = [
-    { id: 1, name: "María García", age: 34, registrationDate: "15/03/2023", lastConsultation: "22/05/2023", avatar: "MG" },
-    { id: 2, name: "Juan López", age: 45, registrationDate: "10/01/2023", lastConsultation: "05/06/2023", avatar: "JL" },
-    { id: 3, name: "Ana Martínez", age: 28, registrationDate: "22/02/2023", lastConsultation: "14/04/2023", avatar: "AM" },
-    { id: 4, name: "Carlos Rodríguez", age: 52, registrationDate: "03/04/2023", lastConsultation: "12/05/2023", avatar: "CR" },
-    { id: 5, name: "Laura Sánchez", age: 39, registrationDate: "18/05/2023", lastConsultation: "01/06/2023", avatar: "LS" },
-    { id: 6, name: "Roberto Fernández", age: 47, registrationDate: "02/02/2023", lastConsultation: "29/05/2023", avatar: "RF" },
-    { id: 7, name: "Sofia González", age: 31, registrationDate: "07/01/2023", lastConsultation: "18/04/2023", avatar: "SG" },
-    { id: 8, name: "Miguel Torres", age: 42, registrationDate: "25/03/2023", lastConsultation: "10/06/2023", avatar: "MT" },
-    { id: 9, name: "Patricia Ruiz", age: 36, registrationDate: "12/04/2023", lastConsultation: "02/06/2023", avatar: "PR" }
-  ];
-
+  const patients = useSelector((state: RootState) => state.patients.ui.patients);
+  const dispatch = useAppDispatch();
+  const doctor = useSelector((state: RootState) => state.auth.doctor);
+  useEffect(() => {
+    if (doctor?.id) {
+      dispatch(getPatients(doctor.id));
+    }
+  }, [dispatch, doctor?.id]);
   if (selectedPatient) {
     return <PatientHistory patient={selectedPatient} onBack={() => setSelectedPatient(null)} />;
   }
@@ -58,36 +50,36 @@ export default function FormElements() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#26a69a]/10 bg-white/90 dark:divide-[#26a69a]/15 dark:bg-slate-900/40">
-              {patients.map((patient) => (
+              {patients?.map((patient) => (
                 <tr
-                  key={patient.id}
+                  key={patient.firstName}
                   className="cursor-pointer transition-colors duration-150 ease-in-out hover:bg-[#26a69a]/8 dark:hover:bg-[#26a69a]/10"
-                  onClick={() => setSelectedPatient(patient)}
+                  onClick={() => setSelectedPatient(patient as unknown as Patient)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#26a69a] text-white shadow-sm">
-                          {patient.avatar}
+                          {patient.firstName.charAt(0)}
                         </div>
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-slate-800 dark:text-slate-100">
-                          {patient.name}
+                          {patient.firstName} {patient.lastName}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {patient.age} años
+                    {patient.birthDate}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {patient.registrationDate}
+                    {new Date(patient.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                    {patient.lastConsultation}
-                  </td>
-                </tr>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                      {patient.lastAppointment ? new Date(patient.lastAppointment).toLocaleDateString() : "No hay consulta" }
+                    </td>
+                  </tr>
               ))}
             </tbody>
           </table>

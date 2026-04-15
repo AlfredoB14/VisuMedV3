@@ -1,15 +1,8 @@
 import { useState } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import TomographyView from "./tomographyView";
+import { Patient } from "../../../redux/patients/types/Patients.interface";
 
-interface Patient {
-  id: number;
-  name: string;
-  age: number;
-  registrationDate: string;
-  lastConsultation: string;
-  avatar: string;
-}
 
 interface Tomography {
   title: string;
@@ -39,16 +32,16 @@ export default function PatientHistory({ patient, onBack }: PatientHistoryProps)
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
             </button>
-            <PageBreadcrumb pageTitle={`Historial de ${patient.name}`} />
+            <PageBreadcrumb pageTitle={`Historial de ${patient.firstName} ${patient.lastName}`} />
 
             <div className="rounded-3xl border border-[#26a69a]/20 bg-white/90 p-5 shadow-sm backdrop-blur-sm dark:border-[#26a69a]/30 dark:bg-slate-900/70 lg:p-6">
                 <div className="mb-8 flex items-center">
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#26a69a] text-xl text-white shadow-sm">
-                        {patient.avatar}
+                        {patient.firstName.charAt(0)}
                     </div>
                     <div className="ml-6">
-                        <h2 className="font-display text-2xl font-semibold text-slate-800 dark:text-slate-100">{patient.name}</h2>
-                        <p className="text-slate-500 dark:text-slate-400">{patient.age} años</p>
+                        <h2 className="font-display text-2xl font-semibold text-slate-800 dark:text-slate-100">{patient.firstName} {patient.lastName}</h2>
+                        <p className="text-slate-500 dark:text-slate-400">{patient.birthDate}</p>
                     </div>
                 </div>
 
@@ -57,9 +50,7 @@ export default function PatientHistory({ patient, onBack }: PatientHistoryProps)
                         <h3 className="font-medium text-lg mb-2">Información del paciente</h3>
                         <div className="grid grid-cols-2 gap-2">
                             <p className="text-sm text-slate-500 dark:text-slate-400">Fecha de alta:</p>
-                            <p className="text-sm font-medium">{patient.registrationDate}</p>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Última consulta:</p>
-                            <p className="text-sm font-medium">{patient.lastConsultation}</p>
+                            <p className="text-sm font-medium">{new Date(patient.createdAt).toLocaleDateString()}</p>
                         </div>
                     </div>
 

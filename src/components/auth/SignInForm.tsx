@@ -53,7 +53,7 @@ export default function SignInForm() {
           to="/"
           className="inline-flex items-center text-sm text-[#26a69a] transition-colors hover:text-[#1f8c81]"
         >
-          <ChevronLeftIcon className="size-5" />
+          <ChevronLeftIcon />
           Regresa al inicio
         </Link>
       </div>
@@ -99,9 +99,9 @@ export default function SignInForm() {
                     className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
                   >
                     {showPassword ? (
-                      <EyeIcon className="fill-gray-500 size-5" />
+                      <EyeIcon />
                     ) : (
-                      <EyeCloseIcon className="fill-gray-500 size-5" />
+                      <EyeCloseIcon />
                     )}
                   </span>
                 </div>

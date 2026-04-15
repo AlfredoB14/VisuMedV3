@@ -1,7 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
-
-export const baseURL = "https://visumeddjango-production.up.railway.app/api/";
+export const baseURL = "/api";
 
 export const api: AxiosInstance = axios.create({
   baseURL,
