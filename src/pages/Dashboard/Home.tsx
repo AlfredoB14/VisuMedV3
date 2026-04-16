@@ -1,4 +1,7 @@
 import PageMeta from "../../components/common/PageMeta";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+
 
 interface DoctorSchedule {
   time: string;
@@ -7,12 +10,12 @@ interface DoctorSchedule {
 }
 
 export default function Home() {
-  const doctorName = "Dr. Alejandro Ramírez"; // Vendrá del contexto de autenticación
-  const currentDate = new Date().toLocaleDateString('es-MX', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const doctor = useSelector((state: RootState) => state.auth.doctor);
+  const currentDate = new Date().toLocaleDateString('es-MX', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
   });
 
   const todaySchedule: DoctorSchedule[] = [
@@ -34,7 +37,7 @@ export default function Home() {
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(38,166,154,0.14),_transparent_38%)]" />
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
-              <h1 className="mb-2 text-3xl font-bold text-slate-900 dark:text-white">¡Buen día, {doctorName}!</h1>
+              <h1 className="mb-2 text-3xl font-bold text-slate-900 dark:text-white">¡Buen día, {doctor?.firstName}!</h1>
               <p className="text-slate-500 dark:text-slate-400">{currentDate}</p>
             </div>
           </div>

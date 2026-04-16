@@ -3,8 +3,13 @@ import UserMetaCard from "../components/UserProfile/UserMetaCard";
 import UserInfoCard from "../components/UserProfile/UserInfoCard";
 import UserAddressCard from "../components/UserProfile/UserAddressCard";
 import PageMeta from "../components/common/PageMeta";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/store";
+import { Doctor } from "../redux/doctors/types/Doctors.interface";
 
 export default function UserProfiles() {
+  const doctor = useSelector((state: RootState) => state.auth.doctor) as Doctor;
+
   return (
     <>
       <PageMeta
@@ -17,8 +22,8 @@ export default function UserProfiles() {
           Profile
         </h3>
         <div className="space-y-6">
-          <UserMetaCard />
-          <UserInfoCard />
+          <UserMetaCard  doctor={doctor} />
+          <UserInfoCard doctor={doctor} />
           <UserAddressCard />
         </div>
       </div>
