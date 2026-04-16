@@ -72,7 +72,7 @@ export default function SignInForm() {
             <div className="space-y-6">
               <div>
                 <Label className="font-medium text-[#26a69a]">
-                  Correo electrónico <span className="text-[#26a69a]">*</span>
+                  Correo electrónico *
                 </Label>
                 <Input 
                   placeholder="correo@ejemplo.com"
@@ -84,7 +84,7 @@ export default function SignInForm() {
 
               <div>
                 <Label className="font-medium text-[#26a69a]">
-                  Contraseña <span className="text-[#26a69a]">*</span>
+                  Contraseña *
                 </Label>
                 <div className="relative">
                   <Input
