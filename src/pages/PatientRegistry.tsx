@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import PageBreadcrumb from "../components/common/PageBreadCrumb";
 import PageMeta from "../components/common/PageMeta";
@@ -6,13 +6,28 @@ import { createPatient } from "../redux/patients/patients.action";
 import { useAppDispatch } from "../redux/hooks";
 import { CreatePatientPayload } from "../redux/patients/types/Patients.interface";
 import { RootState } from "../redux/store";
-import { ROUTES } from "../routes/routes";
 import { useNavigate } from "react-router";
+import { getPatients } from "../services/api";
+import type { Patient } from "../services/api";
 
 const PatientRegistry: React.FC = () => {
   const doctor = useSelector((state: RootState) => state.auth.doctor);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loadingPatients, setLoadingPatients] = useState(false);
+
+  const loadPatients = () => {
+    if (!doctor?.id) return;
+    setLoadingPatients(true);
+    getPatients({ doctorId: doctor.id })
+      .then(setPatients)
+      .catch(() => {})
+      .finally(() => setLoadingPatients(false));
+  };
+
+  useEffect(() => { loadPatients(); }, [doctor?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -43,7 +58,6 @@ const PatientRegistry: React.FC = () => {
           doctorId: doctor.id,
         } as CreatePatientPayload),
       );
-      navigate(ROUTES.APP.HOME);
       setFormData({
         firstName: "",
         lastName: "",
@@ -54,6 +68,8 @@ const PatientRegistry: React.FC = () => {
         birthDate: "",
         address: "",
       });
+      // Reload list to include the new patient
+      setTimeout(loadPatients, 500);
     }
   };
 
@@ -237,6 +253,66 @@ const PatientRegistry: React.FC = () => {
             />
           </div>
         </div>
+      </div>
+
+      {/* ── Patient list ─────────────────────────────────────────────────── */}
+      <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-5 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 lg:p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-[#26a69a]">
+            Mis Pacientes {!loadingPatients && `(${patients.length})`}
+          </h2>
+          <button
+            onClick={loadPatients}
+            className="text-sm text-[#26a69a] hover:underline"
+          >
+            Actualizar
+          </button>
+        </div>
+
+        {loadingPatients ? (
+          <div className="py-8 text-center text-slate-400">Cargando pacientes…</div>
+        ) : patients.length === 0 ? (
+          <div className="py-8 text-center text-slate-400">No hay pacientes registrados todavía.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 dark:bg-slate-950/40">
+                  <th className="px-4 py-3 text-left font-medium uppercase tracking-wide text-slate-500">Paciente</th>
+                  <th className="px-4 py-3 text-left font-medium uppercase tracking-wide text-slate-500">Correo</th>
+                  <th className="px-4 py-3 text-left font-medium uppercase tracking-wide text-slate-500">Teléfono</th>
+                  <th className="px-4 py-3 text-right font-medium uppercase tracking-wide text-slate-500">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                {patients.map((p) => (
+                  <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-950/40">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#26a69a]/15 text-sm font-bold text-[#26a69a]">
+                          {p.firstName.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="font-medium text-slate-800 dark:text-white">
+                          {p.firstName} {p.lastName}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">{p.email || '—'}</td>
+                    <td className="px-4 py-3 text-slate-500">{p.phone || '—'}</td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => navigate(`/patient/${p.id}`)}
+                        className="rounded-full bg-[#26a69a] px-4 py-1.5 text-sm font-medium text-white transition hover:bg-[#1f8c81]"
+                      >
+                        Ver detalles →
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

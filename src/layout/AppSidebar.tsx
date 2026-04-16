@@ -7,7 +7,11 @@ import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
+  GroupIcon,
+  UserCircleIcon,
+  FolderIcon,
+  ChatIcon,
+  PageIcon,
 } from "../icons";
 
 import { useSidebar } from "../context/SidebarContext";
@@ -26,17 +30,34 @@ const navItems: NavItem[] = [
     path: "/home",
   },
   {
-    icon: <CalenderIcon />,
-    name: "Alta de paciente",
+    icon: <GroupIcon />,
+    name: "Mis Pacientes",
+    path: "/search-patient",
+  },
+  {
+    icon: <UserCircleIcon />,
+    name: "Registrar Paciente",
     path: "/patient-registry",
   },
   {
-    name: "Tus pacientes",
-    icon: <ListIcon />,
-    subItems: [
-      { name: "Historial de pacientes", path: "/form-elements", pro: false },
-      { name: "Alta de reporte", path: "/new-report", pro: false }
-    ],
+    icon: <FolderIcon />,
+    name: "Historial Clínico",
+    path: "/form-elements",
+  },
+  {
+    icon: <PageIcon />,
+    name: "Nuevo Reporte",
+    path: "/new-report",
+  },
+  {
+    icon: <CalenderIcon />,
+    name: "Agenda",
+    path: "/calendar",
+  },
+  {
+    icon: <ChatIcon />,
+    name: "Asistente IA",
+    path: "/chatbot",
   },
 ];
 

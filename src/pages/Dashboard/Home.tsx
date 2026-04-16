@@ -1,4 +1,6 @@
 import PageMeta from "../../components/common/PageMeta";
+import { useAppSelector } from "../../redux/hooks";
+import { selectDoctor } from "../../redux/auth/auth.slice";
 
 interface DoctorSchedule {
   time: string;
@@ -7,7 +9,10 @@ interface DoctorSchedule {
 }
 
 export default function Home() {
-  const doctorName = "Dr. Alejandro Ramírez"; // Vendrá del contexto de autenticación
+  const doctor = useAppSelector(selectDoctor);
+  const doctorName = doctor
+    ? `Dr. ${doctor.firstName} ${doctor.lastName}`
+    : 'Doctor';
   const currentDate = new Date().toLocaleDateString('es-MX', { 
     weekday: 'long', 
     year: 'numeric', 
