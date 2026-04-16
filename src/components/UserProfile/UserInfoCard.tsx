@@ -3,8 +3,13 @@ import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
+import { Doctor } from "../../redux/doctors/types/Doctors.interface";
 
-export default function UserInfoCard() {
+type UserInfoCardProps = {
+  doctor: Doctor | null;
+};
+
+export default function UserInfoCard({doctor}: UserInfoCardProps) {
   const { isOpen, openModal, closeModal } = useModal();
   const handleSave = () => {
     // Handle save logic here
@@ -25,7 +30,7 @@ export default function UserInfoCard() {
                 First Name
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Alejandro
+                {doctor?.firstName}
               </p>
             </div>
 
@@ -34,7 +39,7 @@ export default function UserInfoCard() {
                 Last Name
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Chowdhury
+                {doctor?.lastName}
               </p>
             </div>
 
@@ -43,7 +48,7 @@ export default function UserInfoCard() {
                 Email address
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                randomuser@pimjo.com
+                {doctor?.email}
               </p>
             </div>
 
@@ -52,7 +57,7 @@ export default function UserInfoCard() {
                 Phone
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                +09 363 398 46
+                {doctor?.phone}
               </p>
             </div>
 
@@ -61,7 +66,7 @@ export default function UserInfoCard() {
                 Bio
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Team Manager
+                Radiologic
               </p>
             </div>
           </div>
