@@ -1,4 +1,4 @@
-import { Consultation, CreateConsultationPayload } from "../redux/consultations/types/consultations.interface";
+import { Consultation, CreateConsultationPayload } from "../redux/consultations/types/Consultations.interface";
 import {api} from "./instance";
 
 const _consultationsService = {

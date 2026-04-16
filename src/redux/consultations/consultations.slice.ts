@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { Consultation, IConsultationUI } from "./types/consultations.interface";
+import { Consultation, IConsultationUI } from "./types/Consultations.interface";
 import { createConsultation, getConsultations } from "./consultations.action";
 
 

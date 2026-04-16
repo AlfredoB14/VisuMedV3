@@ -1,6 +1,6 @@
 import _doctorsService from "../../services/doctors";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { CreateConsultationPayload } from "./types/consultations.interface";
+import { CreateConsultationPayload } from "./types/Consultations.interface";
 import _consultationsService from "../../services/consultations";
 
 export const getConsultations = createAsyncThunk(

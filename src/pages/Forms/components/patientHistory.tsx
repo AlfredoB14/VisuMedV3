@@ -6,6 +6,7 @@ import { useAppDispatch } from "../../../redux/hooks";
 import { createConsultation, getConsultations } from "../../../redux/consultations/consultations.action";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
+import { Consultation } from "../../../redux/consultations/types/Consultations.interface";
 
 
 interface Tomography {
@@ -196,7 +197,7 @@ export default function PatientHistory({ patient, onBack }: PatientHistoryProps)
                                 </tr>
                                 </thead>
                                 <tbody className="divide-y divide-[#26a69a]/10 bg-white/90 dark:divide-[#26a69a]/15 dark:bg-slate-900/40">
-                                    {consultations?.map((item) => (
+                                    {consultations?.map((item: Consultation) => (
                                         <tr
                                         key={item.id}
                                         className="transition-colors duration-150 ease-in-out hover:bg-[#26a69a]/8 dark:hover:bg-[#26a69a]/10"
