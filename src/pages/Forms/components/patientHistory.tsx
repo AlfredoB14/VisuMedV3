@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import TomographyView from "./tomographyView";
 import { Patient } from "../../../redux/patients/types/Patients.interface";
-import { getStudies } from "../../../services/api";
 import { useAppDispatch } from "../../../redux/hooks";
 import { getConsultations } from "../../../redux/consultations/consultations.action";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
 // import { Consultation } from "../../../redux/consultations/types/Consultations.interface";
 import { Study } from "../../../redux/studies/types/Studies.interface";
+import { getStudies } from "../../../redux/studies/studies.action";
+import { studiesSelector } from "../../../redux/studies/studies.selector";
 
 
 interface Tomography {
@@ -41,19 +42,20 @@ export default function PatientHistory({ patient, onBack }: PatientHistoryProps)
     const doctor = useSelector((state: RootState) => state.auth.doctor);
     // const consultations = useSelector((state: RootState) => state.consultation.ui.consultations)
     const [selectedTomography, setSelectedTomography] = useState<Tomography | null>(null);
-    const [studies, setStudies] = useState<Study[]>([]);
-    const [loadingStudies, setLoadingStudies] = useState(true);
+    const {
+        studies,
+        loading: loadingStudies,
+      } = useSelector(studiesSelector).ui;
+    const dispatch = useAppDispatch()
 
     useEffect(() => {
-        getStudies({ patientId: patient.id })
-            .then(setStudies)
-            .catch(() => setStudies([]))
-            .finally(() => setLoadingStudies(false));
-    }, [patient.id]);
+        if (!patient.id) return;
+      
+        dispatch(getStudies(patient.id));
+      }, [dispatch, patient.id]);
     // const [activeTab, setActiveTab] = useState<"see_appointment"|"add_appointment"|"patient_info">("patient_info");
     // const [appointmentDate, setAppointmentDate] = useState("");
     // const [appointmentTime, setAppointmentTime] = useState("");
-    const dispatch = useAppDispatch()
     useEffect(() => {
         dispatch(getConsultations({ patientId: patient?.id, doctorId: doctor?.id ? doctor?.id : "", status: "confirmed"} ))
     }, [])
@@ -373,11 +375,11 @@ export default function PatientHistory({ patient, onBack }: PatientHistoryProps)
 
                     {loadingStudies ? (
                         <p className="text-sm text-slate-400">Cargando estudios…</p>
-                    ) : studies.length === 0 ? (
+                    ) : studies?.length === 0 ? (
                         <p className="text-sm text-slate-400">Este paciente no tiene estudios registrados.</p>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {studies.map((study) => {
+                            {studies?.map((study) => {
                                 const t = studyToTomography(study);
                                 return (
                                     <div
