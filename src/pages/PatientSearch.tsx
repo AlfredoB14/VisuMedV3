@@ -1,51 +1,57 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import PageBreadcrumb from '../components/common/PageBreadCrumb';
 import PageMeta from '../components/common/PageMeta';
-import { getPatients } from '../services/api';
-import type { Patient } from '../services/api';
-import { useAppSelector } from '../redux/hooks';
+import { Patient } from '../redux/patients/types/Patients.interface';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectDoctor } from '../redux/auth/auth.slice';
+import { useSelector } from 'react-redux';
+import { patientsSelector } from '../redux/patients/patients.selector';
+import { getPatients } from '../redux/patients/patients.action';
 
 const STUDY_TYPES = ['Todos los estudios', 'Radiografía', 'Tomografía', 'Resonancia', 'Ecografía'];
 
 const PacientesSearch: React.FC = () => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const doctor = useAppSelector(selectDoctor);
+  const {
+    patients,
+    loading: loadingPatients,
+    error: patientsError,
+  } = useSelector(patientsSelector).ui;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudyType, setSelectedStudyType] = useState('Todos los estudios');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
-  const fetchPatients = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const params: { doctorId?: string; search?: string } = {};
-      if (doctor?.id) params.doctorId = doctor.id;
-      if (searchTerm.trim()) params.search = searchTerm.trim();
-      const data = await getPatients(params);
-      setPatients(data);
-    } catch {
-      setError('No se pudieron cargar los pacientes. Verifica tu conexión.');
-    } finally {
-      setLoading(false);
-    }
-  }, [doctor?.id, searchTerm]);
-
-  // Load on mount
   useEffect(() => {
-    fetchPatients();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!doctor?.id) return;
+    dispatch(getPatients(doctor.id));
+  }, [dispatch, doctor?.id]);
+
+  const filteredPatients = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+  
+    if (!term) return patients ?? [];
+  
+    return (patients ?? []).filter((patient) => {
+      const fullName = `${patient.firstName} ${patient.lastName}`.toLowerCase();
+      const email = patient.email?.toLowerCase() ?? "";
+      const phone = patient.phone?.toLowerCase() ?? "";
+  
+      return (
+        fullName.includes(term) ||
+        email.includes(term) ||
+        phone.includes(term)
+      );
+    });
+  }, [patients, searchTerm]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchPatients();
   };
 
   const lastStudyLabel = (p: Patient) =>
@@ -92,10 +98,10 @@ const PacientesSearch: React.FC = () => {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loadingPatients}
               className="rounded-full bg-[#26a69a] px-6 py-3 font-medium text-white transition hover:bg-[#1f8c81] disabled:opacity-60"
             >
-              {loading ? 'Buscando…' : 'Buscar'}
+              {loadingPatients ? 'Buscando…' : 'Buscar'}
             </button>
           </form>
 
@@ -123,9 +129,9 @@ const PacientesSearch: React.FC = () => {
         </div>
 
         {/* Error */}
-        {error && (
+        {patientsError && (
           <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20">
-            {error}
+            {patientsError}
           </div>
         )}
 
@@ -135,12 +141,12 @@ const PacientesSearch: React.FC = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-[#26a69a]">Resultados</h2>
               <span className="font-medium text-slate-500">
-                {loading ? 'Cargando…' : `${patients.length} paciente${patients.length !== 1 ? 's' : ''} encontrado${patients.length !== 1 ? 's' : ''}`}
+                {loadingPatients ? 'Cargando…' : `${patients?.length} paciente${patients?.length !== 1 ? 's' : ''} encontrado${patients?.length !== 1 ? 's' : ''}`}
               </span>
             </div>
           </div>
 
-          {loading ? (
+          {loadingPatients ? (
             <div className="py-12 text-center text-slate-400">Cargando pacientes…</div>
           ) : (
             <div className="overflow-x-auto">
@@ -154,7 +160,7 @@ const PacientesSearch: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                  {patients.map((patient) => (
+                  {filteredPatients.map((patient) => (
                     <tr key={patient.id} className="transition duration-150 hover:bg-slate-50 dark:hover:bg-slate-950/40">
                       <td className="px-6 py-4">
                         <div className="font-medium text-slate-900 dark:text-white">
@@ -183,7 +189,7 @@ const PacientesSearch: React.FC = () => {
                 </tbody>
               </table>
 
-              {patients.length === 0 && !loading && (
+              {patients?.length === 0 && !loadingPatients && (
                 <div className="py-12 text-center">
                   <p className="text-slate-500">No se encontraron pacientes con los criterios de búsqueda.</p>
                 </div>

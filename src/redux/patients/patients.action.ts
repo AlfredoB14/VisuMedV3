@@ -8,7 +8,7 @@ export const createPatient = createAsyncThunk(
         const response = await _patientsService.createPatient(patient);
         return response as Patient;
     },
-    );
+);
 
 export const getPatients = createAsyncThunk(
     "patients/getPatients",

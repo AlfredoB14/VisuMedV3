@@ -2,10 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router';
 import PageMeta from "../components/common/PageMeta";
 import PageBreadcrumb from '../components/common/PageBreadCrumb';
-import { getPatients, getStudies, getReports, getReport, createReport, updateReport } from '../services/api';
-import type { Patient, Study, Report } from '../services/api';
-import { useAppSelector } from '../redux/hooks';
+import { Report } from '../redux/reports/types/Reports.interface';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectDoctor } from '../redux/auth/auth.slice';
+import { useSelector } from 'react-redux';
+import { patientsSelector } from '../redux/patients/patients.selector';
+import { getPatients } from '../redux/patients/patients.action';
+import { studiesSelector } from '../redux/studies/studies.selector';
+import { clearStudies } from '../redux/studies/studies.slice';
+import { getStudies } from '../redux/studies/studies.action';
+import { clearReports } from '../redux/reports/reports.slice';
+import { getReports, updateReport, createReport, getReport } from '../redux/reports/reports.action';
+import { reportsSelector } from '../redux/reports/reports.selector';
 
 const MODALITY_LABEL: Record<string, string> = {
   MR: 'Resonancia Magnética',
@@ -29,13 +37,28 @@ function buildQrUrl(link: string): string {
 }
 
 export default function NewReport() {
+  const dispatch = useAppDispatch()
   const doctor = useAppSelector(selectDoctor);
+  const {
+    patients,
+    loading: loadingPatients,
+    error: patientsError,
+  } = useSelector(patientsSelector).ui;
+  const {
+    studies,
+    loading: loadingStudies,
+    error: studiesError,
+  } = useSelector(studiesSelector).ui;
   const [searchParams] = useSearchParams();
+  const {
+    reports,
+    loading: loadingReports,
+    error: reportsError,
+  } = useSelector(reportsSelector).ui;
 
   // Patient / study selectors
-  const [patients, setPatients] = useState<Patient[]>([]);
+  // const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState('');
-  const [studies, setStudies] = useState<Study[]>([]);
   const [selectedStudyId, setSelectedStudyId] = useState('');
 
   // Form state
@@ -51,73 +74,84 @@ export default function NewReport() {
   });
   const [nuevaConclusion, setNuevaConclusion] = useState('');
   const [nuevaSugerencia, setNuevaSugerencia] = useState('');
+  const [formError, setFormError] = useState('')
+  const errorMessage = formError || reportsError || studiesError || patientsError;
 
   // UI state
-  const [loading, setLoading] = useState(false);
-  const [loadingPatients, setLoadingPatients] = useState(true);
-  const [loadingStudies, setLoadingStudies] = useState(false);
-  const [error, setError] = useState('');
+  // const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState('');
   const [savedReport, setSavedReport] = useState<Report | null>(null);
   const [isSigned, setIsSigned] = useState(false);
 
   // If ?reportId= is in URL, load that report directly (most reliable path from PatientDetail)
   useEffect(() => {
-    const reportId = searchParams.get('reportId');
+    const reportId = searchParams.get("reportId") as string;
     if (!reportId) return;
-    getReport(reportId)
+  
+    dispatch(getReport(reportId))
+      .unwrap()
       .then(loadExistingReport)
-      .catch(() => { /* report not found — form stays blank */ });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+      .catch(() => {});
+  }, [dispatch, searchParams]);
 
   // Load patients on mount; pre-select if ?patientId= is in URL
   useEffect(() => {
-    setLoadingPatients(true);
-    getPatients(doctor?.id ? { doctorId: doctor.id } : undefined)
-      .then((data) => {
-        setPatients(data);
-        const preselect = searchParams.get('patientId');
-        if (preselect && data.find((p) => p.id === preselect)) {
-          setSelectedPatientId(preselect);
-        }
-      })
-      .catch(() => setError('No se pudieron cargar los pacientes.'))
-      .finally(() => setLoadingPatients(false));
-  }, [doctor?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (doctor?.id){
+      dispatch(getPatients(doctor?.id));
+    }
+  }, [dispatch, doctor?.id]);
+
+  useEffect(() => {
+    const preselect = searchParams.get("patientId");
+    if (!preselect) return;
+  
+    const patientExists = patients?.some((p) => p.id === preselect);
+    if (patientExists) {
+      setSelectedPatientId(preselect);
+    }
+  }, [patients, searchParams]);
 
   // Load studies when patient changes
   useEffect(() => {
     if (!selectedPatientId) {
-      setStudies([]);
-      setSelectedStudyId('');
+      dispatch(clearStudies());
+      setSelectedStudyId("");
       return;
     }
-    setLoadingStudies(true);
-    const preSelectStudyId = searchParams.get('studyId');
-    getStudies({ patientId: selectedPatientId })
-      .then((data) => {
-        setStudies(data);
-        const target = preSelectStudyId ? data.find(s => s.id === preSelectStudyId) ?? null : null;
-        const first = target || (data.length > 0 ? data[0] : null);
-        if (target) {
-          setSelectedStudyId(target.id);
-          // Only fetch by studyId if we didn't already load by reportId
-          if (!searchParams.get('reportId')) {
-            fetchReportForStudy(target.id);
-          }
-        } else {
-          setSelectedStudyId('');
-        }
-        if (first && !searchParams.get('reportId')) {
-          setFormData((prev) => ({
-            ...prev,
-            nombreEstudio: prev.nombreEstudio || modalityLabel(first.modality) + (first.bodyPart ? ` — ${first.bodyPart}` : ''),
-            fechaEstudio: prev.fechaEstudio || (first.studyDate ? first.studyDate.substring(0, 10) : ''),
-          }));
-        }
-      })
-      .catch(() => setError('No se pudieron cargar los estudios del paciente.'))
-      .finally(() => setLoadingStudies(false));
-  }, [selectedPatientId]);
+  
+    dispatch(getStudies(selectedPatientId));
+  }, [dispatch, selectedPatientId]);
+
+  useEffect(() => {
+    if (!selectedPatientId) return;
+  
+    const preSelectStudyId = searchParams.get("studyId");
+    const target = preSelectStudyId
+      ? studies?.find((s) => s.id === preSelectStudyId) ?? null
+      : null;
+  
+    const first = target || (studies && studies.length > 0 ? studies[0] : null);
+  
+    if (first) {
+      setSelectedStudyId(first.id);
+  
+      if (!searchParams.get("reportId")) {
+        dispatch(getReports({ studyId: first.id }));
+      }
+  
+      setFormData((prev) => ({
+        ...prev,
+        nombreEstudio:
+          prev.nombreEstudio ||
+          modalityLabel(first.modality) + (first.bodyPart ? ` — ${first.bodyPart}` : ""),
+        fechaEstudio:
+          prev.fechaEstudio || (first.studyDate ? first.studyDate.substring(0, 10) : ""),
+      }));
+    } else {
+      setSelectedStudyId("");
+      dispatch(clearReports());
+    }
+  }, [dispatch, studies, selectedPatientId, searchParams]);
 
   // Populate the form with an existing report's data
   const loadExistingReport = (r: Report) => {
@@ -136,27 +170,44 @@ export default function NewReport() {
   };
 
   // Fetch existing report for a study, if any
-  const fetchReportForStudy = async (studyId: string) => {
-    try {
-      const reports = await getReports({ studyId });
-      if (reports.length > 0) loadExistingReport(reports[0]);
-    } catch { /* no report yet — leave form blank */ }
-  };
+  useEffect(() => {
+    if (!selectedStudyId) {
+      dispatch(clearReports());
+      return;
+    }
+  
+    dispatch(getReports({ studyId: selectedStudyId }));
+  }, [dispatch, selectedStudyId]);
+
+  useEffect(() => {
+    const firstReport = reports?.[0];
+  
+    if (firstReport) {
+      loadExistingReport(firstReport);
+    }
+  }, [reports]);
 
   // Auto-fill when study selection changes
   const handleStudyChange = (studyId: string) => {
     setSelectedStudyId(studyId);
     setSavedReport(null);
     setIsSigned(false);
-    if (!studyId) return;
-    const study = studies.find((s) => s.id === studyId);
+  
+    if (!studyId) {
+      dispatch(clearReports());
+      return;
+    }
+  
+    const study = studies?.find((s) => s.id === studyId);
     if (!study) return;
+  
     setFormData((prev) => ({
       ...prev,
-      nombreEstudio: modalityLabel(study.modality) + (study.bodyPart ? ` — ${study.bodyPart}` : ''),
+      nombreEstudio: `${modalityLabel(study.modality)}${study.bodyPart ? ` — ${study.bodyPart}` : ""}`,
       fechaEstudio: study.studyDate ? study.studyDate.substring(0, 10) : prev.fechaEstudio,
     }));
-    fetchReportForStudy(studyId);
+  
+    dispatch(getReports({ studyId }));
   };
 
   const handleChange = (
@@ -188,39 +239,43 @@ export default function NewReport() {
 
   const generarReporte = async (sign = false) => {
     if (!selectedStudyId) {
-      setError('Selecciona un estudio para generar el reporte.');
+      setFormError("Selecciona un estudio para generar el reporte.");
       return;
     }
-    setError('');
-    setLoading(true);
+  
+    setFormError("");
+  
+    const payload = {
+      studyId: selectedStudyId,
+      doctorId: doctor?.id,
+      studyName: formData.nombreEstudio,
+      technique: formData.tecnicaEstudio,
+      studyDate: formData.fechaEstudio || undefined,
+      indication: formData.indicacionEstudio,
+      findings: formData.hallazgos,
+      priorStudies: formData.estudiosPrevios,
+      conclusions: formData.conclusiones.join("\n"),
+      suggestions: formData.sugerencias.join("\n"),
+      status: sign ? "signed" : "draft",
+    };
+  
     try {
-      const payload = {
-        studyId: selectedStudyId,
-        doctorId: doctor?.id,
-        studyName: formData.nombreEstudio,
-        technique: formData.tecnicaEstudio,
-        studyDate: formData.fechaEstudio || undefined,
-        indication: formData.indicacionEstudio,
-        findings: formData.hallazgos,
-        priorStudies: formData.estudiosPrevios,
-        conclusions: formData.conclusiones.join('\n'),
-        suggestions: formData.sugerencias.join('\n'),
-        status: sign ? 'signed' : 'draft',
-      };
-
-      let report: Report;
-      if (savedReport) {
-        report = await updateReport(savedReport.id, payload);
-      } else {
-        report = await createReport(payload);
-      }
-
+      const report = savedReport
+        ? await dispatch(
+            updateReport({
+              id: savedReport.id,
+              data: payload,
+            })
+          ).unwrap()
+        : await dispatch(createReport(payload)).unwrap();
+  
       setSavedReport(report);
-      if (sign) setIsSigned(true);
-    } catch (err: any) {
-      setError(err.response?.data?.error ?? 'Error al guardar el reporte. Intenta de nuevo.');
-    } finally {
-      setLoading(false);
+  
+      if (sign) {
+        setIsSigned(true);
+      }
+    } catch {
+      // El error ya se maneja desde reportsSlice
     }
   };
 
@@ -230,7 +285,7 @@ export default function NewReport() {
     navigator.clipboard.writeText(link).catch(() => {});
   };
 
-  const selectedStudy = studies.find((s) => s.id === selectedStudyId);
+  const selectedStudy = studies?.find((s) => s.id === selectedStudyId);
 
   return (
     <>
@@ -258,7 +313,7 @@ export default function NewReport() {
                   className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                 >
                   <option value="">— Seleccionar paciente —</option>
-                  {patients.map((p) => (
+                  {patients?.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.firstName} {p.lastName}
                       {p.email ? ` (${p.email})` : ''}
@@ -282,7 +337,7 @@ export default function NewReport() {
                   className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white disabled:opacity-50"
                 >
                   <option value="">— Seleccionar estudio —</option>
-                  {studies.map((s) => (
+                  {studies?.map((s) => (
                     <option key={s.id} value={s.id}>
                       {modalityLabel(s.modality)}
                       {s.bodyPart ? ` — ${s.bodyPart}` : ''}
@@ -292,7 +347,7 @@ export default function NewReport() {
                   ))}
                 </select>
               )}
-              {selectedPatientId && studies.length === 0 && !loadingStudies && (
+              {selectedPatientId && studies?.length === 0 && !loadingStudies && (
                 <p className="mt-1 text-xs text-slate-400">No hay estudios para este paciente.</p>
               )}
             </div>
@@ -478,9 +533,9 @@ export default function NewReport() {
         </div>
 
         {/* ── Error ────────────────────────────────────────────────── */}
-        {error && (
+        {errorMessage && (
           <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
-            {error}
+            {errorMessage}
           </div>
         )}
 
@@ -488,17 +543,22 @@ export default function NewReport() {
         <div className="flex flex-wrap justify-end gap-4">
           <button
             onClick={() => generarReporte(false)}
-            disabled={loading || !selectedStudyId}
-            className="rounded-full border border-[#26a69a] px-6 py-3 font-semibold text-[#26a69a] transition-all hover:bg-[#26a69a]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loadingReports || !selectedStudyId}
+            className="rounded-full border border-[#26a69a] px-6 py-3 font-semibold text-[#26a69a] transition-all hover:bg-[#26a69a]/10 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? 'Guardando…' : 'Guardar borrador'}
+            {loadingReports ? "Guardando…" : "Guardar borrador"}
           </button>
+
           <button
             onClick={() => generarReporte(true)}
-            disabled={loading || !selectedStudyId || isSigned}
-            className="rounded-full bg-[#26a69a] px-6 py-3 font-semibold text-white shadow-md transition-all hover:bg-[#1f8c81] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loadingReports || !selectedStudyId || isSigned}
+            className="rounded-full bg-[#26a69a] px-6 py-3 font-semibold text-white shadow-md transition-all hover:bg-[#1f8c81] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? 'Guardando…' : isSigned ? 'Reporte firmado ✓' : 'Generar y firmar reporte'}
+            {loadingReports
+              ? "Guardando…"
+              : isSigned
+                ? "Reporte firmado ✓"
+                : "Generar y firmar reporte"}
           </button>
         </div>
 
@@ -566,3 +626,4 @@ export default function NewReport() {
     </>
   );
 }
+

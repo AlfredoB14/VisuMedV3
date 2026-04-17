@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import PageMeta from '../components/common/PageMeta';
 import PageBreadcrumb from '../components/common/PageBreadCrumb';
-import {
-  getPatients, getStudies, createStudy, getOrthancStudies, getReports,
-} from '../services/api';
-import type { Patient, Study, OrthancStudy } from '../services/api';
-import { useAppSelector } from '../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { selectDoctor } from '../redux/auth/auth.slice';
+import { patientsSelector } from '../redux/patients/patients.selector';
+import { useSelector } from 'react-redux';
+import { studiesSelector } from '../redux/studies/studies.selector';
+import { getStudies, createStudy, getOrthancStudies } from '../redux/studies/studies.action';
+import { getReports } from '../redux/reports/reports.action';
+import _reportsService from '../services/reports';
 
 const MODALITY_LABEL: Record<string, string> = {
   MR: 'Resonancia Magnética', CT: 'Tomografía Computarizada',
@@ -30,12 +32,14 @@ export default function PatientDetail() {
   const { patientId } = useParams<{ patientId: string }>();
   const navigate = useNavigate();
   const doctor = useAppSelector(selectDoctor);
+  const dispatch = useAppDispatch();
 
-  const [patient, setPatient]           = useState<Patient | null>(null);
-  const [studies, setStudies]           = useState<Study[]>([]);
+  const { patients } = useSelector(patientsSelector).ui;
+  const { studies, loading: loadingStudies } = useSelector(studiesSelector).ui;
+  const { orthancStudies } = useSelector(studiesSelector).ui;
+  
+
   const [studyReportId, setStudyReportId] = useState<Record<string, string>>({}); // studyId -> reportId
-  const [orthancStudies, setOrthancStudies] = useState<OrthancStudy[]>([]);
-  const [loadingPage, setLoadingPage]   = useState(true);
   const [showAssign, setShowAssign]     = useState(false);
   const [assigning, setAssigning]       = useState(false);
   const [assignError, setAssignError]   = useState('');
@@ -46,43 +50,66 @@ export default function PatientDetail() {
   const [assignBodyPart, setAssignBodyPart]         = useState('');
   const [assignDate, setAssignDate]                 = useState('');
 
-  // Load patient + studies on mount, then fetch reportIds for completed/signed studies
+  const patient = useMemo(() => {
+    return patients?.find((p) => p.id === patientId) ?? null;
+  }, [patients, patientId]);
+
   useEffect(() => {
     if (!patientId) return;
-    Promise.all([
-      getPatients().then(list => list.find(p => p.id === patientId) ?? null),
-      getStudies({ patientId }),
-    ]).then(([p, s]) => {
-      setPatient(p);
-      setStudies(s as Study[]);
-      // For each completed/signed study, fetch its report so we have the reportId
-      const finishedStudies = (s as Study[]).filter(
-        st => st.status === 'completed' || st.status === 'signed'
+    dispatch(getStudies(patientId));
+  }, [dispatch, patientId]);
+
+  // Load patient + studies on mount, then fetch reportIds for completed/signed studies
+  useEffect(() => {
+    if (!studies?.length) {
+      setStudyReportId({});
+      return;
+    }
+  
+    const loadStudyReportIds = async () => {
+      const finishedStudies = studies.filter(
+        (study) => study.status === "completed" || study.status === "signed"
       );
-      Promise.all(
-        finishedStudies.map(st =>
-          getReports({ studyId: st.id })
-            .then(reports => reports.length > 0 ? [st.id, reports[0].id] as const : null)
-            .catch(() => null)
-        )
-      ).then(results => {
-        const map: Record<string, string> = {};
-        results.forEach(r => { if (r) map[r[0]] = r[1]; });
-        setStudyReportId(map);
+    
+      const results = await Promise.all(
+        finishedStudies.map(async (study) => {
+          try {
+            const reports = await dispatch(
+              getReports({ studyId: study.id })
+            ).unwrap();
+    
+            return reports.length > 0 ? [study.id, reports[0].id] as const : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+    
+      const reportMap: Record<string, string> = {};
+      results.forEach((result) => {
+        if (result) {
+          reportMap[result[0]] = result[1];
+        }
       });
-    }).finally(() => setLoadingPage(false));
-  }, [patientId]);
+    
+      setStudyReportId(reportMap);
+    };
+  
+    loadStudyReportIds();
+  }, [studies]);
+  
 
   // Load Orthanc studies when assign panel opens
   useEffect(() => {
-    if (!showAssign || orthancStudies.length > 0) return;
-    getOrthancStudies().then(setOrthancStudies).catch(() => {});
-  }, [showAssign]);
+    if (!showAssign || (orthancStudies?.length ?? 0) > 0) return;
+  
+    dispatch(getOrthancStudies());
+  }, [dispatch, showAssign, orthancStudies]);
 
   // Auto-fill modality when Orthanc study is selected
   const handleOrthancSelect = (id: string) => {
     setSelectedOrthancId(id);
-    const found = orthancStudies.find(s => s.orthancId === id);
+    const found = orthancStudies?.find(s => s.orthancId === id);
     if (found) {
       setAssignModality(found.modality || '');
       setAssignDate(found.date ? `${found.date.slice(0,4)}-${found.date.slice(4,6)}-${found.date.slice(6,8)}` : '');
@@ -91,33 +118,44 @@ export default function PatientDetail() {
 
   const handleAssign = async (e: React.FormEvent) => {
     e.preventDefault();
+  
     if (!selectedOrthancId || !patientId) return;
+  
     setAssigning(true);
-    setAssignError('');
+    setAssignError("");
+  
     try {
-      const study = await createStudy({
-        orthancStudyId: selectedOrthancId,
-        patientId,
-        referringDoctorId: doctor?.id,
-        modality: assignModality,
-        bodyPart: assignBodyPart,
-        studyDate: assignDate || undefined,
-        status: 'pending',
-      });
-      setStudies(prev => [study, ...prev]);
+      await dispatch(
+        createStudy({
+          orthancStudyId: selectedOrthancId,
+          patientId,
+          referringDoctorId: doctor?.id,
+          modality: assignModality,
+          bodyPart: assignBodyPart,
+          studyDate: assignDate || undefined,
+          status: "pending",
+        })
+      ).unwrap();
+  
+      await dispatch(getStudies(patientId));
+  
       setShowAssign(false);
-      setSelectedOrthancId('');
-      setAssignModality('');
-      setAssignBodyPart('');
-      setAssignDate('');
+      setSelectedOrthancId("");
+      setAssignModality("");
+      setAssignBodyPart("");
+      setAssignDate("");
     } catch (err: any) {
-      setAssignError(err.response?.data?.error ?? 'Error al asignar el estudio.');
+      setAssignError(
+        err?.response?.data?.error ??
+        err?.message ??
+        "Error al asignar el estudio."
+      );
     } finally {
       setAssigning(false);
     }
   };
 
-  if (loadingPage) {
+  if (loadingStudies) {
     return (
       <div className="flex items-center justify-center py-24">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#26a69a] border-t-transparent" />
@@ -173,7 +211,7 @@ export default function PatientDetail() {
         <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-[#26a69a]">
-              Estudios ({studies.length})
+              Estudios ({studies?.length})
             </h2>
             <button
               onClick={() => setShowAssign(v => !v)}
@@ -202,9 +240,9 @@ export default function PatientDetail() {
                   className="w-full appearance-none rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                 >
                   <option value="">
-                    {orthancStudies.length === 0 ? 'Cargando estudios de Orthanc…' : '— Seleccionar estudio —'}
+                    {orthancStudies?.length === 0 ? 'Cargando estudios de Orthanc…' : '— Seleccionar estudio —'}
                   </option>
-                  {orthancStudies.map(s => (
+                  {orthancStudies?.map(s => (
                     <option key={s.orthancId} value={s.orthancId}>
                       {s.orthancId.slice(0, 12)}… · {s.modality || '?'} · {s.description || 'Sin descripción'} · {s.seriesCount} series
                     </option>
@@ -271,13 +309,13 @@ export default function PatientDetail() {
           )}
 
           {/* Studies list */}
-          {studies.length === 0 ? (
+          {studies?.length === 0 ? (
             <p className="py-8 text-center text-slate-400">
               Este paciente no tiene estudios asignados todavía.
             </p>
           ) : (
             <div className="space-y-3">
-              {studies.map(study => (
+              {studies?.map(study => (
                 <div
                   key={study.id}
                   className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-950/40"

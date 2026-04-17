@@ -1,4 +1,7 @@
 import axios from 'axios';
+import { Doctor } from '../redux/doctors/types/Doctors.interface';
+import { Patient } from '../redux/patients/types/Patients.interface';
+import { Study } from '../redux/studies/types/Studies.interface';
 
 const BASE_URL =
   (import.meta.env.VITE_API_URL as string | undefined) ||
@@ -9,70 +12,6 @@ export const apiClient = axios.create({
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
 });
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-export interface Doctor {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  role: string;
-  createdAt: string;
-}
-
-export interface Patient {
-  id: string;
-  doctorId: string | null;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  birthDate: string | null;
-  gender: string;
-  address: string;
-  postalCode: string;
-  state: string;
-  lastConsultationAt: string | null;
-  createdAt: string;
-}
-
-export interface Study {
-  id: string;
-  orthancStudyId: string;
-  patientId: string;
-  referringDoctorId: string | null;
-  interpretingDoctorId: string | null;
-  modality: string;
-  bodyPart: string;
-  studyDate: string | null;
-  status: string;
-  createdAt: string;
-}
-
-export interface Report {
-  id: string;
-  studyId: string;
-  doctorId: string | null;
-  studyName: string;
-  technique: string;
-  studyDate: string | null;
-  indication: string;
-  findings: string;
-  priorStudies: string;
-  conclusions: string;
-  suggestions: string;
-  status: string;
-  shareToken: string | null;
-  createdAt: string;
-  // enriched fields (from by-token endpoint)
-  doctorName?: string | null;
-  doctorRole?: string | null;
-  orthancStudyId?: string | null;
-  studyModality?: string | null;
-  studyBodyPart?: string | null;
-}
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
