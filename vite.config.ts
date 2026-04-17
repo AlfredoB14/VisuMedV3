@@ -14,9 +14,11 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://visumeddjango-production.up.railway.app",
+        // In local dev, proxy to the local Django server so <img src="/api/..."> works.
+        // axios calls use VITE_API_URL directly and bypass this proxy.
+        target: "http://127.0.0.1:8000",
         changeOrigin: true,
-        secure: true,
+        secure: false,
       },
     },
   },

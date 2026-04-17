@@ -3,7 +3,7 @@ import { IPatientsUI, Patient } from "./types/Patients.interface";
 import { createPatient, getPatients } from "./patients.action";
 
 const initialState: IPatientsUI = {
-  ui: { loading: false },
+  ui: { loading: false, error: null },
 };
 
 export const patientsSlice = createSlice({
@@ -14,6 +14,7 @@ export const patientsSlice = createSlice({
     builder
     .addCase(getPatients.pending, (state) => {
         state.ui.loading = true;
+        state.ui.error = null;
       })
       .addCase(getPatients.fulfilled, (state, action) => {
         state.ui.loading = false;
@@ -21,15 +22,18 @@ export const patientsSlice = createSlice({
       })
       .addCase(getPatients.rejected, (state) => {
         state.ui.loading = false;
+        state.ui.error = "No se pudieron cargar los pacientes.";
       })
       .addCase(createPatient.pending, (state) => {
         state.ui.loading = true;
+        state.ui.error = null;
       })
       .addCase(createPatient.fulfilled, (state) => {
         state.ui.loading = false;
       })
       .addCase(createPatient.rejected, (state) => {
         state.ui.loading = false;
+        state.ui.error = "No se pudo crear el paciente.";
       });
   },
 });

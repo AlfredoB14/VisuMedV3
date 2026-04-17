@@ -17,7 +17,9 @@ export const ROUTES = {
   
       BLANK: "/blank",
       SEARCH_PATIENT: "/search-patient",
+      PATIENT_DETAIL: "/patient/:patientId",
       NEW_REPORT: "/new-report",
+      STUDY_VIEWER: "/study-viewer",
   
       FORMS: {
         ELEMENTS: "/form-elements",

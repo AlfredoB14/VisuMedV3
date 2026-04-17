@@ -1,6 +1,8 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
-export const baseURL = "/api";
+// Use VITE_API_URL when set (local dev), otherwise fall back to the Vite proxy
+export const baseURL =
+  (import.meta.env.VITE_API_URL as string | undefined) || "/api";
 
 export const api: AxiosInstance = axios.create({
   baseURL,

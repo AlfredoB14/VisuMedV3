@@ -77,7 +77,7 @@ export default function FormElements() {
                     {new Date(patient.createdAt).toLocaleDateString()}
                   </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {patient.lastAppointment ? new Date(patient.lastAppointment).toLocaleDateString() : "No hay consulta" }
+                      {patient.lastConsultationAt ? new Date(patient.lastConsultationAt).toLocaleDateString() : "No hay consulta" }
                     </td>
                   </tr>
               ))}
