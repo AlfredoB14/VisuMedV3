@@ -7,7 +7,7 @@ const _studiesService = {
     return response.data;
   },
   createStudy: async (data: CreateStudyPayload) => {
-    const response = await api.post<Study>(`/doctor`, data);
+    const response = await api.post<Study>(`/studies-db/`, data);
     return response.data;
   },
   updateStudy: async (id: string, data: Partial<Study>) => {
