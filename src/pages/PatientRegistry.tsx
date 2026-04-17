@@ -2,28 +2,25 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import PageBreadcrumb from "../components/common/PageBreadCrumb";
 import PageMeta from "../components/common/PageMeta";
-import { createPatient } from "../redux/patients/patients.action";
+import { createPatient, getPatients } from "../redux/patients/patients.action";
 import { useAppDispatch } from "../redux/hooks";
 import { CreatePatientPayload } from "../redux/patients/types/Patients.interface";
 import { RootState } from "../redux/store";
 import { useNavigate } from "react-router";
-import { getPatients } from "../services/api";
-import type { Patient } from "../services/api";
+import { patientsSelector } from "../redux/patients/patients.selector";
 
 const PatientRegistry: React.FC = () => {
   const doctor = useSelector((state: RootState) => state.auth.doctor);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [loadingPatients, setLoadingPatients] = useState(false);
+  const {
+    patients,
+    loading: loadingPatients,
+  } = useSelector(patientsSelector).ui;
 
   const loadPatients = () => {
     if (!doctor?.id) return;
-    setLoadingPatients(true);
-    getPatients({ doctorId: doctor.id })
-      .then(setPatients)
-      .catch(() => {})
-      .finally(() => setLoadingPatients(false));
+    dispatch(getPatients(doctor.id));
   };
 
   useEffect(() => { loadPatients(); }, [doctor?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -259,7 +256,7 @@ const PatientRegistry: React.FC = () => {
       <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-5 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80 lg:p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-[#26a69a]">
-            Mis Pacientes {!loadingPatients && `(${patients.length})`}
+            Mis Pacientes {!loadingPatients && `(${patients?.length})`}
           </h2>
           <button
             onClick={loadPatients}
@@ -271,7 +268,7 @@ const PatientRegistry: React.FC = () => {
 
         {loadingPatients ? (
           <div className="py-8 text-center text-slate-400">Cargando pacientes…</div>
-        ) : patients.length === 0 ? (
+        ) : patients?.length === 0 ? (
           <div className="py-8 text-center text-slate-400">No hay pacientes registrados todavía.</div>
         ) : (
           <div className="overflow-x-auto">
@@ -285,7 +282,7 @@ const PatientRegistry: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                {patients.map((p) => (
+                {patients?.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50 dark:hover:bg-slate-950/40">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">

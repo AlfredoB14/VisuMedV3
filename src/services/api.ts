@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Doctor } from '../redux/doctors/types/Doctors.interface';
-import { Patient } from '../redux/patients/types/Patients.interface';
 import { Study } from '../redux/studies/types/Studies.interface';
+import { Patient } from '../redux/patients/types/Patients.interface';
 
 const BASE_URL =
   (import.meta.env.VITE_API_URL as string | undefined) ||

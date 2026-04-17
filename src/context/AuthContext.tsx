@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import type { Doctor } from '../services/api';
+import { Doctor } from '../redux/doctors/types/Doctors.interface';
 
 interface AuthContextType {
   doctor: Doctor | null;
