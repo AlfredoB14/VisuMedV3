@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { AuthProvider } from "./context/AuthContext";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -22,13 +23,15 @@ import Home from "./pages/Dashboard/Home";
 import VisuMedLanding from "./pages/LandingPage";
 import PacientesSearch from "./pages/PatientSearch";
 import NewReport from "./pages/NewReport";
+import PatientDetail from "./pages/PatientDetail";
+import StudyViewer from "./pages/StudyViewer";
 import { ROUTES } from "./routes/routes";
 import { ProtectedRoute } from "./routes/protected-route";
 
 
 export default function App() {
   return (
-    <>
+    <AuthProvider>
       <Router>
         <ScrollToTop />
         <Routes>
@@ -45,6 +48,8 @@ export default function App() {
             <Route path={ROUTES.APP.BLANK} element={<ProtectedRoute><Blank /></ProtectedRoute>} />
             <Route path={ROUTES.APP.SEARCH_PATIENT} element={<ProtectedRoute><PacientesSearch /></ProtectedRoute>} />
             <Route path={ROUTES.APP.NEW_REPORT} element={<ProtectedRoute><NewReport /></ProtectedRoute>} />
+            <Route path={ROUTES.APP.PATIENT_DETAIL} element={<ProtectedRoute><PatientDetail /></ProtectedRoute>} />
+            <Route path={ROUTES.APP.STUDY_VIEWER} element={<ProtectedRoute><StudyViewer /></ProtectedRoute>} />
 
             {/* Forms */}
             <Route path={ROUTES.APP.FORMS.ELEMENTS} element={<ProtectedRoute><FormElements /></ProtectedRoute>} />
@@ -76,6 +81,6 @@ export default function App() {
           <Route path={ROUTES.NOT_FOUND} element={<NotFound />} />
         </Routes>
       </Router>
-    </>
+    </AuthProvider>
   );
 }

@@ -1,6 +1,6 @@
 import {api} from "./instance";
 import {
-    CreateDoctorPayload,
+  CreateDoctorPayload,
   Doctor,
 } from "../redux/doctors/types/Doctors.interface";
 

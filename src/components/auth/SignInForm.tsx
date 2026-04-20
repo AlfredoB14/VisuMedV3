@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
@@ -14,33 +13,30 @@ export default function SignInForm() {
   const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+    setError('');
     try {
-      const response = await api.post(
-        "/doctors/login/",
-        {
-          email: formData.email,
-          password: formData.password,
-        },
-      );
+      const response = await api.post("/doctors/login/", {
+        email: formData.email,
+        password: formData.password,
+      });
 
       dispatch(setAuthState({ isAuthenticated: true, doctor: response.data.doctor }));
       navigate(ROUTES.APP.HOME);
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message ||
-        "No se pudo iniciar sesión. Verifica tus credenciales.";
-      console.log(errorMessage);
-      setFormData({
-        email: "",
-        password: "",
-      });
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "No se pudo iniciar sesión. Verifica tus credenciales.",
+      );
     } finally {
       setLoading(false);
     }
@@ -67,18 +63,22 @@ export default function SignInForm() {
               ¡Ingresa tus credenciales para acceder a tu cuenta!
             </p>
           </div>
-          
-          <form className="rounded-[2rem] border border-slate-200 bg-white/85 p-8 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+
+          <form
+            onSubmit={handleLogin}
+            className="rounded-[2rem] border border-slate-200 bg-white/85 p-8 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80"
+          >
             <div className="space-y-6">
               <div>
                 <Label className="font-medium text-[#26a69a]">
                   Correo electrónico *
                 </Label>
-                <Input 
+                <Input
+                  type="email"
                   placeholder="correo@ejemplo.com"
                   className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 p-3 focus:border-[#26a69a] focus:ring-1 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setError(''); }}
                 />
               </div>
 
@@ -92,44 +92,34 @@ export default function SignInForm() {
                     placeholder="Ingresa tu contraseña"
                     className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 p-3 focus:border-[#26a69a] focus:ring-1 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40"
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={(e) => { setFormData({ ...formData, password: e.target.value }); setError(''); }}
                   />
                   <span
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
                   >
-                    {showPassword ? (
-                      <EyeIcon />
-                    ) : (
-                      <EyeCloseIcon />
-                    )}
+                    {showPassword ? <EyeIcon /> : <EyeCloseIcon />}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end">
-                <Link
-                  to="/reset-password"
-                  className="text-sm text-[#26a69a] transition-colors hover:text-[#1f8c81]"
-                >
-                  ¿Olvidaste tu contraseña?
-                </Link>
-              </div>
+              {error && (
+                <p className="text-sm text-red-500 -mt-2">{error}</p>
+              )}
 
-              <button 
-                type="button"
-                onClick={handleLogin}
+              <button
+                type="submit"
                 disabled={loading}
-                className="w-full rounded-full bg-[#26a69a] py-3 font-semibold text-white transition-colors hover:bg-[#1f8c81]"
+                className="w-full rounded-full bg-[#26a69a] py-3 font-semibold text-white transition-colors hover:bg-[#1f8c81] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Iniciar Sesión
+                {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
               </button>
             </div>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-slate-600 dark:text-slate-400">
-              ¿No tienes una cuenta? {" "}
+              ¿No tienes una cuenta?{' '}
               <Link
                 to="/signup"
                 className="font-medium text-[#26a69a] transition-colors hover:text-[#1f8c81]"

@@ -8,11 +8,17 @@ import {
   import { doctorsSlice } from "./doctors/doctors.slice";
 import authSlice from "./auth/auth.slice";
 import { patientsSlice } from "./patients/patients.slice";
+import { consultationSlice } from "./consultations/consultations.slice";
+import { studiesSlice } from "./studies/studies.slice";
+import { reportsSlice } from "./reports/reports.slice";
 
   const appReducer = combineReducers({
     doctors: doctorsSlice.reducer,
     auth: authSlice,
     patients: patientsSlice.reducer,
+    consultation: consultationSlice.reducer,
+    studies: studiesSlice.reducer,
+    reports: reportsSlice.reducer
   });
   
   export const rootReducer = (state: any, action: Action<string>) => {

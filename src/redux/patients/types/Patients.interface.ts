@@ -1,15 +1,17 @@
 export interface Patient {
-    firstName: string;  
-    lastName: string;
-    email: string;
-    phone: string;
-    birthDate: string;
-    gender: string;
-    address: string;
-    postalCode: string;
-    state: string;
-    createdAt: string;
-    lastAppointment: string;
+  id: string;
+  doctorId: string | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  birthDate: string | null;
+  gender: string;
+  address: string;
+  postalCode: string;
+  state: string;
+  lastConsultationAt: string | null;
+  createdAt: string;
 }
 
 export interface IPatientsUI {
@@ -19,6 +21,7 @@ export interface IPatientsUI {
 export interface IPatientsState {
   loading: boolean;
   patients?: Patient[];
+  error: string | null;
 }
 
 export interface CreatePatientPayload extends Patient {
