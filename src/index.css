@@ -8,6 +8,8 @@ layer(base);
 @theme {
   --font-*: initial;
   --font-outfit: Outfit, sans-serif;
+  --font-sans: Inter, sans-serif;
+  --font-display: "Plus Jakarta Sans", sans-serif;
 
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;
@@ -276,6 +278,29 @@ layer(base);
     @apply bg-gray-200 rounded-full dark:bg-gray-700;
   }
 }
+
+@layer utilities {
+  .app-density {
+    font-size: 14px;
+  }
+
+  .app-density .text-2xl {
+    font-size: 1.35rem;
+    line-height: 1.9rem;
+  }
+
+  .app-density .text-xl {
+    font-size: 1.125rem;
+    line-height: 1.6rem;
+  }
+
+  .app-density input,
+  .app-density select,
+  .app-density textarea {
+    font-size: 13px;
+  }
+}
+
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #344054;
 }
@@ -775,4 +800,20 @@ span.flatpickr-weekday,
 
 .simplebar-scrollbar.simplebar-visible:before {
   @apply opacity-100;
+}
+
+/* ─── Landing Page Styles ─── */
+.medical-bg-pattern {
+  background-color: #f8fafc;
+  background-image: radial-gradient(#26a69a 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
+}
+
+.dark .medical-bg-pattern {
+  background-color: #0f172a;
+  background-image: radial-gradient(#26a69a 0.5px, transparent 0.5px);
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }

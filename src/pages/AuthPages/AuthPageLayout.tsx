@@ -3,23 +3,23 @@ import { Link } from "react-router";
 
 export default function AuthLayout({ children }: {children: React.ReactNode;}) {
   return (
-    <div className="min-h-screen bg-[#f8fae1] flex flex-col">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col dark:bg-[#0f172a]">
       <div className="flex flex-1 flex-col lg:flex-row">
         {children}
-        <div className="items-center hidden w-full lg:w-1/2 bg-[#009975] lg:flex">
+        <div className="items-center hidden w-full lg:flex lg:w-1/2 bg-[#26a69a]">
           <div className="relative w-full flex items-center justify-center">
             {/* Decorative circles */}
             <div 
-              className="absolute bottom-[-50px] left-[-100px] w-72 h-72 bg-[#e98232] rounded-full opacity-20"
+              className="absolute bottom-[-50px] left-[-100px] w-72 h-72 bg-white/10 rounded-full"
               aria-hidden="true"
             />
             <div 
-              className="absolute top-[-150px] right-[0px] w-96 h-72 bg-[#b4e082] rounded-full opacity-20"
+              className="absolute top-[-150px] right-[0px] w-96 h-72 bg-white/10 rounded-full"
               aria-hidden="true"
             />
             
-            <div className="flex flex-col items-center justify-center max-w-xs relative z-10 py-12">
-              <h2 className="text-3xl font-bold text-white mb-4 text-center">
+            <div className="relative z-10 flex max-w-xs flex-col items-center justify-center py-12">
+              <h2 className="mb-4 text-center text-3xl font-bold text-white">
                 Bienvenido a
               </h2>
                 <Link to="/" className="block mb-8">

@@ -1,267 +1,487 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router';
 import PageMeta from "../components/common/PageMeta";
 import PageBreadcrumb from '../components/common/PageBreadCrumb';
+import { Report } from '../redux/reports/types/Reports.interface';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
+import { selectDoctor } from '../redux/auth/auth.slice';
+import { useSelector } from 'react-redux';
+import { patientsSelector } from '../redux/patients/patients.selector';
+import { getPatients } from '../redux/patients/patients.action';
+import { studiesSelector } from '../redux/studies/studies.selector';
+import { clearStudies } from '../redux/studies/studies.slice';
+import { getStudies } from '../redux/studies/studies.action';
+import { clearReports } from '../redux/reports/reports.slice';
+import { getReports, updateReport, createReport, getReport } from '../redux/reports/reports.action';
+import { reportsSelector } from '../redux/reports/reports.selector';
+
+const MODALITY_LABEL: Record<string, string> = {
+  MR: 'Resonancia Magnética',
+  CT: 'Tomografía Computarizada',
+  CR: 'Radiografía',
+  US: 'Ultrasonido',
+  PT: 'PET',
+  NM: 'Medicina Nuclear',
+};
+
+function modalityLabel(mod: string) {
+  return MODALITY_LABEL[mod] || mod || 'Estudio';
+}
+
+function buildShareLink(report: Report): string {
+  return `visumed://report/${report.id}?token=${report.shareToken}`;
+}
+
+function buildQrUrl(link: string): string {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(link)}`;
+}
 
 export default function NewReport() {
+  const dispatch = useAppDispatch()
+  const doctor = useAppSelector(selectDoctor);
+  const {
+    patients,
+    loading: loadingPatients,
+    error: patientsError,
+  } = useSelector(patientsSelector).ui;
+  const {
+    studies,
+    loading: loadingStudies,
+    error: studiesError,
+  } = useSelector(studiesSelector).ui;
+  const [searchParams] = useSearchParams();
+  const {
+    reports,
+    loading: loadingReports,
+    error: reportsError,
+  } = useSelector(reportsSelector).ui;
+
+  // Patient / study selectors
+  // const [patients, setPatients] = useState<Patient[]>([]);
+  const [selectedPatientId, setSelectedPatientId] = useState('');
+  const [selectedStudyId, setSelectedStudyId] = useState('');
+
+  // Form state
   const [formData, setFormData] = useState({
     nombreEstudio: '',
     tecnicaEstudio: '',
     fechaEstudio: '',
-    paciente: {
-      nombre: '',
-      fechaNacimiento: '',
-      sexo: '',
-      edad: ''
-    },
     indicacionEstudio: '',
     hallazgos: '',
     estudiosPrevios: '',
     conclusiones: [] as string[],
-    sugerencias: [] as string[]
+    sugerencias: [] as string[],
   });
-
   const [nuevaConclusion, setNuevaConclusion] = useState('');
   const [nuevaSugerencia, setNuevaSugerencia] = useState('');
+  const [formError, setFormError] = useState('')
+  const errorMessage = formError || reportsError || studiesError || patientsError;
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      if (parent === 'paciente') {
-        setFormData(prev => ({
-          ...prev,
-          [parent]: {
-            ...prev[parent],
-            [child]: value
-          }
-        }));
-      }
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
+  // UI state
+  // const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState('');
+  const [savedReport, setSavedReport] = useState<Report | null>(null);
+  const [isSigned, setIsSigned] = useState(false);
+
+  // If ?reportId= is in URL, load that report directly (most reliable path from PatientDetail)
+  useEffect(() => {
+    const reportId = searchParams.get("reportId") as string;
+    if (!reportId) return;
+  
+    dispatch(getReport(reportId))
+      .unwrap()
+      .then(loadExistingReport)
+      .catch(() => {});
+  }, [dispatch, searchParams]);
+
+  // Load patients on mount; pre-select if ?patientId= is in URL
+  useEffect(() => {
+    if (doctor?.id){
+      dispatch(getPatients(doctor?.id));
     }
+  }, [dispatch, doctor?.id]);
+
+  useEffect(() => {
+    const preselect = searchParams.get("patientId");
+    if (!preselect) return;
+  
+    const patientExists = patients?.some((p) => p.id === preselect);
+    if (patientExists) {
+      setSelectedPatientId(preselect);
+    }
+  }, [patients, searchParams]);
+
+  // Load studies when patient changes
+  useEffect(() => {
+    if (!selectedPatientId) {
+      dispatch(clearStudies());
+      setSelectedStudyId("");
+      return;
+    }
+  
+    dispatch(getStudies(selectedPatientId));
+  }, [dispatch, selectedPatientId]);
+
+  useEffect(() => {
+    if (!selectedPatientId) return;
+  
+    const preSelectStudyId = searchParams.get("studyId");
+    const target = preSelectStudyId
+      ? studies?.find((s) => s.id === preSelectStudyId) ?? null
+      : null;
+  
+    const first = target || (studies && studies.length > 0 ? studies[0] : null);
+  
+    if (first) {
+      setSelectedStudyId(first.id);
+  
+      if (!searchParams.get("reportId")) {
+        dispatch(getReports({ studyId: first.id }));
+      }
+  
+      setFormData((prev) => ({
+        ...prev,
+        nombreEstudio:
+          prev.nombreEstudio ||
+          modalityLabel(first.modality) + (first.bodyPart ? ` — ${first.bodyPart}` : ""),
+        fechaEstudio:
+          prev.fechaEstudio || (first.studyDate ? first.studyDate.substring(0, 10) : ""),
+      }));
+    } else {
+      setSelectedStudyId("");
+      dispatch(clearReports());
+    }
+  }, [dispatch, studies, selectedPatientId, searchParams]);
+
+  // Populate the form with an existing report's data
+  const loadExistingReport = (r: Report) => {
+    setSavedReport(r);
+    setIsSigned(r.status === 'signed');
+    setFormData({
+      nombreEstudio:      r.studyName     || '',
+      tecnicaEstudio:     r.technique     || '',
+      fechaEstudio:       r.studyDate     ? r.studyDate.substring(0, 10) : '',
+      indicacionEstudio:  r.indication    || '',
+      hallazgos:          r.findings      || '',
+      estudiosPrevios:    r.priorStudies  || '',
+      conclusiones:       r.conclusions   ? r.conclusions.split('\n').filter(Boolean) : [],
+      sugerencias:        r.suggestions   ? r.suggestions.split('\n').filter(Boolean) : [],
+    });
+  };
+
+  // Fetch existing report for a study, if any
+  useEffect(() => {
+    if (!selectedStudyId) {
+      dispatch(clearReports());
+      return;
+    }
+  
+    dispatch(getReports({ studyId: selectedStudyId }));
+  }, [dispatch, selectedStudyId]);
+
+  useEffect(() => {
+    const firstReport = reports?.[0];
+  
+    if (firstReport) {
+      loadExistingReport(firstReport);
+    }
+  }, [reports]);
+
+  // Auto-fill when study selection changes
+  const handleStudyChange = (studyId: string) => {
+    setSelectedStudyId(studyId);
+    setSavedReport(null);
+    setIsSigned(false);
+  
+    if (!studyId) {
+      dispatch(clearReports());
+      return;
+    }
+  
+    const study = studies?.find((s) => s.id === studyId);
+    if (!study) return;
+  
+    setFormData((prev) => ({
+      ...prev,
+      nombreEstudio: `${modalityLabel(study.modality)}${study.bodyPart ? ` — ${study.bodyPart}` : ""}`,
+      fechaEstudio: study.studyDate ? study.studyDate.substring(0, 10) : prev.fechaEstudio,
+    }));
+  
+    dispatch(getReports({ studyId }));
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const agregarConclusion = () => {
-    if (nuevaConclusion.trim() !== '') {
-      setFormData(prev => ({
-        ...prev,
-        conclusiones: [...prev.conclusiones, nuevaConclusion]
-      }));
-      setNuevaConclusion('');
-    }
+    if (!nuevaConclusion.trim()) return;
+    setFormData((prev) => ({ ...prev, conclusiones: [...prev.conclusiones, nuevaConclusion.trim()] }));
+    setNuevaConclusion('');
   };
 
-  const eliminarConclusion = (index: any) => {
-    setFormData(prev => ({
-      ...prev,
-      conclusiones: prev.conclusiones.filter((_, i) => i !== index)
-    }));
+  const eliminarConclusion = (index: number) => {
+    setFormData((prev) => ({ ...prev, conclusiones: prev.conclusiones.filter((_, i) => i !== index) }));
   };
 
   const agregarSugerencia = () => {
-    if (nuevaSugerencia.trim() !== '') {
-      setFormData(prev => ({
-        ...prev,
-        sugerencias: [...prev.sugerencias, nuevaSugerencia]
-      }));
-      setNuevaSugerencia('');
+    if (!nuevaSugerencia.trim()) return;
+    setFormData((prev) => ({ ...prev, sugerencias: [...prev.sugerencias, nuevaSugerencia.trim()] }));
+    setNuevaSugerencia('');
+  };
+
+  const eliminarSugerencia = (index: number) => {
+    setFormData((prev) => ({ ...prev, sugerencias: prev.sugerencias.filter((_, i) => i !== index) }));
+  };
+
+  const generarReporte = async (sign = false) => {
+    if (!selectedStudyId) {
+      setFormError("Selecciona un estudio para generar el reporte.");
+      return;
+    }
+  
+    setFormError("");
+  
+    const payload = {
+      studyId: selectedStudyId,
+      doctorId: doctor?.id,
+      studyName: formData.nombreEstudio,
+      technique: formData.tecnicaEstudio,
+      studyDate: formData.fechaEstudio || undefined,
+      indication: formData.indicacionEstudio,
+      findings: formData.hallazgos,
+      priorStudies: formData.estudiosPrevios,
+      conclusions: formData.conclusiones.join("\n"),
+      suggestions: formData.sugerencias.join("\n"),
+      status: sign ? "signed" : "draft",
+    };
+  
+    try {
+      const report = savedReport
+        ? await dispatch(
+            updateReport({
+              id: savedReport.id,
+              data: payload,
+            })
+          ).unwrap()
+        : await dispatch(createReport(payload)).unwrap();
+  
+      setSavedReport(report);
+  
+      if (sign) {
+        setIsSigned(true);
+      }
+    } catch {
+      // El error ya se maneja desde reportsSlice
     }
   };
 
-  const eliminarSugerencia = (index: any) => {
-    setFormData(prev => ({
-      ...prev,
-      sugerencias: prev.sugerencias.filter((_, i) => i !== index)
-    }));
+  const handleCopyLink = () => {
+    if (!savedReport?.shareToken) return;
+    const link = buildShareLink(savedReport);
+    navigator.clipboard.writeText(link).catch(() => {});
   };
 
-  const generarReporte = () => {
-    // Implementar lógica de generación de reporte
-    console.log("Generando reporte con datos:", formData);
-  };
+  const selectedStudy = studies?.find((s) => s.id === selectedStudyId);
 
   return (
     <>
-      <PageMeta
-        title="VisuMed | Nuevo Reporte"
-        description="Generación de nuevo reporte médico - Plataforma médica avanzada"
-      />
+      <PageMeta title="VisuMed | Nuevo Reporte" description="Generación de nuevo reporte médico" />
       <PageBreadcrumb pageTitle="Registro de Nuevo Reporte" />
-      <div className="max-w-5xl mx-auto py-8 px-4">
-        {/* Card de información del estudio */}
-        <div className="mb-6 bg-white rounded-xl shadow p-6">
-          <h2 className="text-2xl font-bold mb-6 text-[#009975] border-b border-gray-200 pb-3">
+
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+
+        {/* ── Patient & Study selector ──────────────────────────────── */}
+        <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+          <h2 className="mb-6 border-b border-slate-200 pb-3 text-2xl font-bold text-[#26a69a] dark:border-slate-800">
+            Paciente y Estudio
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="mb-2 block font-medium text-slate-700 dark:text-slate-400">
+                Paciente
+              </label>
+              {loadingPatients ? (
+                <p className="text-sm text-slate-400">Cargando pacientes…</p>
+              ) : (
+                <select
+                  value={selectedPatientId}
+                  onChange={(e) => setSelectedPatientId(e.target.value)}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
+                >
+                  <option value="">— Seleccionar paciente —</option>
+                  {patients?.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.firstName} {p.lastName}
+                      {p.email ? ` (${p.email})` : ''}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            <div>
+              <label className="mb-2 block font-medium text-slate-700 dark:text-slate-400">
+                Estudio
+              </label>
+              {loadingStudies ? (
+                <p className="text-sm text-slate-400">Cargando estudios…</p>
+              ) : (
+                <select
+                  value={selectedStudyId}
+                  onChange={(e) => handleStudyChange(e.target.value)}
+                  disabled={!selectedPatientId}
+                  className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white disabled:opacity-50"
+                >
+                  <option value="">— Seleccionar estudio —</option>
+                  {studies?.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {modalityLabel(s.modality)}
+                      {s.bodyPart ? ` — ${s.bodyPart}` : ''}
+                      {s.studyDate ? ` (${s.studyDate.substring(0, 10)})` : ''}
+                      {` · ${s.status}`}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {selectedPatientId && studies?.length === 0 && !loadingStudies && (
+                <p className="mt-1 text-xs text-slate-400">No hay estudios para este paciente.</p>
+              )}
+            </div>
+          </div>
+
+          {selectedStudy && (
+            <div className="mt-4 rounded-xl bg-[#26a69a]/8 border border-[#26a69a]/20 p-3 text-sm text-slate-600 dark:text-slate-300">
+              <span className="font-medium text-[#26a69a]">Estudio seleccionado:</span>{' '}
+              {modalityLabel(selectedStudy.modality)}
+              {selectedStudy.bodyPart ? ` — ${selectedStudy.bodyPart}` : ''}{' '}
+              · ID Orthanc:{' '}
+              <code className="text-xs">{selectedStudy.orthancStudyId}</code>
+            </div>
+          )}
+        </div>
+
+        {/* ── Study info ───────────────────────────────────────────── */}
+        <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+          <h2 className="mb-6 border-b border-slate-200 pb-3 text-2xl font-bold text-[#26a69a] dark:border-slate-800">
             Información del Estudio
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Nombre del Estudio</label>
+              <label className="mb-2 block font-medium text-slate-700 dark:text-slate-400">Nombre del Estudio</label>
               <input
                 type="text"
                 name="nombreEstudio"
                 value={formData.nombreEstudio}
                 onChange={handleChange}
                 placeholder="Ej: Radiografía de tórax"
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-[#009975] focus:ring-2 focus:ring-[#009975] focus:ring-opacity-20 outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Técnica del Estudio</label>
+              <label className="mb-2 block font-medium text-slate-700 dark:text-slate-400">Técnica del Estudio</label>
               <input
                 type="text"
                 name="tecnicaEstudio"
                 value={formData.tecnicaEstudio}
                 onChange={handleChange}
                 placeholder="Ej: Tomografía multicorte"
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-[#009975] focus:ring-2 focus:ring-[#009975] focus:ring-opacity-20 outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-gray-700 font-medium mb-2">Fecha del Estudio</label>
+              <label className="mb-2 block font-medium text-slate-700 dark:text-slate-400">Fecha del Estudio</label>
               <input
                 type="date"
                 name="fechaEstudio"
                 value={formData.fechaEstudio}
                 onChange={handleChange}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-[#009975] focus:ring-2 focus:ring-[#009975] focus:ring-opacity-20 outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
               />
             </div>
           </div>
         </div>
 
-        {/* Card de información del paciente */}
-        <div className="mb-6 bg-white rounded-xl shadow p-6">
-          <h2 className="text-2xl font-bold mb-6 text-[#009975] border-b border-gray-200 pb-3">
-            Información del Paciente
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Nombre del Paciente</label>
-              <input
-                type="text"
-                name="paciente.nombre"
-                value={formData.paciente.nombre}
-                onChange={handleChange}
-                placeholder="Nombre completo"
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-[#009975] focus:ring-2 focus:ring-[#009975] focus:ring-opacity-20 outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Fecha de Nacimiento</label>
-              <input
-                type="date"
-                name="paciente.fechaNacimiento"
-                value={formData.paciente.fechaNacimiento}
-                onChange={handleChange}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-[#009975] focus:ring-2 focus:ring-[#009975] focus:ring-opacity-20 outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Sexo</label>
-              <select
-                name="paciente.sexo"
-                value={formData.paciente.sexo}
-                onChange={handleChange}
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-[#009975] focus:ring-2 focus:ring-[#009975] focus:ring-opacity-20 outline-none appearance-none"
-              >
-                <option value="">Seleccionar</option>
-                <option value="Masculino">Masculino</option>
-                <option value="Femenino">Femenino</option>
-                <option value="Otro">Otro</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">Edad</label>
-              <input
-                type="number"
-                name="paciente.edad"
-                value={formData.paciente.edad}
-                onChange={handleChange}
-                placeholder="Edad en años"
-                className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-[#009975] focus:ring-2 focus:ring-[#009975] focus:ring-opacity-20 outline-none"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Card de detalles del estudio */}
-        <div className="mb-6 bg-white rounded-xl shadow p-6">
-          <h2 className="text-2xl font-bold mb-6 text-[#009975] border-b border-gray-200 pb-3">
+        {/* ── Study details ────────────────────────────────────────── */}
+        <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+          <h2 className="mb-6 border-b border-slate-200 pb-3 text-2xl font-bold text-[#26a69a] dark:border-slate-800">
             Detalles del Estudio
           </h2>
-          
+
           <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">Indicación del Estudio</label>
+            <label className="mb-2 block font-medium text-slate-700 dark:text-slate-400">Indicación del Estudio</label>
             <textarea
               name="indicacionEstudio"
               value={formData.indicacionEstudio}
               onChange={handleChange}
               rows={2}
               placeholder="Motivo por el que se realiza el estudio"
-              className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-[#009975] focus:ring-2 focus:ring-[#009975] focus:ring-opacity-20 outline-none resize-none"
-            ></textarea>
+              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
+            />
           </div>
-          
+
           <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">Hallazgos</label>
+            <label className="mb-2 block font-medium text-slate-700 dark:text-slate-400">Hallazgos</label>
             <textarea
               name="hallazgos"
               value={formData.hallazgos}
               onChange={handleChange}
-              rows={4}
-              placeholder="Descripción detallada de los hallazgos encontrados"
-              className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-[#009975] focus:ring-2 focus:ring-[#009975] focus:ring-opacity-20 outline-none resize-none"
-            ></textarea>
+              rows={5}
+              placeholder="Descripción detallada de los hallazgos (uno por línea)"
+              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
+            />
+            <p className="mt-1 text-xs text-slate-400">Cada línea aparecerá como un punto individual en la app del paciente.</p>
           </div>
-          
+
           <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">Estudios Previos</label>
+            <label className="mb-2 block font-medium text-slate-700 dark:text-slate-400">Estudios Previos</label>
             <textarea
               name="estudiosPrevios"
               value={formData.estudiosPrevios}
               onChange={handleChange}
               rows={2}
               placeholder="Información de estudios anteriores relacionados"
-              className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:border-[#009975] focus:ring-2 focus:ring-[#009975] focus:ring-opacity-20 outline-none resize-none"
-            ></textarea>
+              className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
+            />
           </div>
         </div>
-        
-        {/* Card de conclusiones y sugerencias */}
-        <div className="mb-6 bg-white rounded-xl shadow p-6">
-          <h2 className="text-2xl font-bold mb-6 text-[#009975] border-b border-gray-200 pb-3">
+
+        {/* ── Conclusions & Suggestions ────────────────────────────── */}
+        <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+          <h2 className="mb-6 border-b border-slate-200 pb-3 text-2xl font-bold text-[#26a69a] dark:border-slate-800">
             Conclusiones y Sugerencias
           </h2>
-          
+
+          {/* Conclusiones */}
           <div className="mb-8">
-            <label className="block text-gray-700 font-medium mb-3">Conclusiones</label>
+            <label className="mb-3 block font-medium text-slate-700 dark:text-slate-400">Conclusiones</label>
             <div className="flex mb-3">
               <input
                 type="text"
                 value={nuevaConclusion}
                 onChange={(e) => setNuevaConclusion(e.target.value)}
-                className="flex-grow p-3 bg-gray-50 border border-gray-300 rounded-l-lg focus:border-[#009975] focus:ring-2 focus:ring-[#009975] focus:ring-opacity-20 outline-none"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), agregarConclusion())}
+                className="flex-grow rounded-l-full border border-slate-200 bg-slate-50 p-3 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                 placeholder="Agregar nueva conclusión"
               />
-              <button 
+              <button
                 onClick={agregarConclusion}
-                className="px-6 py-3 bg-[#009975] text-white rounded-r-lg font-medium hover:bg-[#007c5f] transition-all"
+                className="rounded-r-full bg-[#26a69a] px-6 py-3 font-medium text-white transition-all hover:bg-[#1f8c81]"
               >
                 Agregar
               </button>
             </div>
             {formData.conclusiones.length > 0 ? (
-              <ul className="mt-3 border border-gray-200 rounded-lg divide-y divide-gray-200">
-                {formData.conclusiones.map((conclusion, index) => (
-                  <li key={index} className="flex items-center p-3 hover:bg-gray-50">
-                    <span className="flex-grow text-gray-700">{conclusion}</span>
-                    <button 
-                      onClick={() => eliminarConclusion(index)}
-                      className="ml-3 px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-all"
+              <ul className="mt-3 divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+                {formData.conclusiones.map((c, i) => (
+                  <li key={i} className="flex items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-950/40">
+                    <span className="flex-grow text-slate-700 dark:text-slate-300">{c}</span>
+                    <button
+                      onClick={() => eliminarConclusion(i)}
+                      className="ml-3 rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
                     >
                       Eliminar
                     </button>
@@ -269,35 +489,37 @@ export default function NewReport() {
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-500 italic mt-3">No hay conclusiones agregadas</p>
+              <p className="mt-3 italic text-slate-500">No hay conclusiones agregadas</p>
             )}
           </div>
-          
+
+          {/* Sugerencias */}
           <div className="mb-4">
-            <label className="block text-gray-700 font-medium mb-3">Sugerencias</label>
+            <label className="mb-3 block font-medium text-slate-700 dark:text-slate-400">Sugerencias</label>
             <div className="flex mb-3">
               <input
                 type="text"
                 value={nuevaSugerencia}
                 onChange={(e) => setNuevaSugerencia(e.target.value)}
-                className="flex-grow p-3 bg-gray-50 border border-gray-300 rounded-l-lg focus:border-[#009975] focus:ring-2 focus:ring-[#009975] focus:ring-opacity-20 outline-none"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), agregarSugerencia())}
+                className="flex-grow rounded-l-full border border-slate-200 bg-slate-50 p-3 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                 placeholder="Agregar nueva sugerencia"
               />
-              <button 
+              <button
                 onClick={agregarSugerencia}
-                className="px-6 py-3 bg-[#009975] text-white rounded-r-lg font-medium hover:bg-[#007c5f] transition-all"
+                className="rounded-r-full bg-[#26a69a] px-6 py-3 font-medium text-white transition-all hover:bg-[#1f8c81]"
               >
                 Agregar
               </button>
             </div>
             {formData.sugerencias.length > 0 ? (
-              <ul className="mt-3 border border-gray-200 rounded-lg divide-y divide-gray-200">
-                {formData.sugerencias.map((sugerencia, index) => (
-                  <li key={index} className="flex items-center p-3 hover:bg-gray-50">
-                    <span className="flex-grow text-gray-700">{sugerencia}</span>
-                    <button 
-                      onClick={() => eliminarSugerencia(index)}
-                      className="ml-3 px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-600 transition-all"
+              <ul className="mt-3 divide-y divide-slate-200 overflow-hidden rounded-2xl border border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+                {formData.sugerencias.map((s, i) => (
+                  <li key={i} className="flex items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-950/40">
+                    <span className="flex-grow text-slate-700 dark:text-slate-300">{s}</span>
+                    <button
+                      onClick={() => eliminarSugerencia(i)}
+                      className="ml-3 rounded-full bg-red-500 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
                     >
                       Eliminar
                     </button>
@@ -305,21 +527,103 @@ export default function NewReport() {
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-500 italic mt-3">No hay sugerencias agregadas</p>
+              <p className="mt-3 italic text-slate-500">No hay sugerencias agregadas</p>
             )}
           </div>
         </div>
-        
-        {/* Botón de acción */}
-        <div className="flex justify-end mt-8">
-          <button 
-            onClick={generarReporte}
-            className="px-4 py-2 bg-[#FF6B35] text-white rounded-lg font-semibold hover:bg-[#e85a28] transition-all shadow-md hover:shadow-lg text-lg"
+
+        {/* ── Error ────────────────────────────────────────────────── */}
+        {errorMessage && (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+            {errorMessage}
+          </div>
+        )}
+
+        {/* ── Action buttons ───────────────────────────────────────── */}
+        <div className="flex flex-wrap justify-end gap-4">
+          <button
+            onClick={() => generarReporte(false)}
+            disabled={loadingReports || !selectedStudyId}
+            className="rounded-full border border-[#26a69a] px-6 py-3 font-semibold text-[#26a69a] transition-all hover:bg-[#26a69a]/10 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Generar Reporte
+            {loadingReports ? "Guardando…" : "Guardar borrador"}
+          </button>
+
+          <button
+            onClick={() => generarReporte(true)}
+            disabled={loadingReports || !selectedStudyId || isSigned}
+            className="rounded-full bg-[#26a69a] px-6 py-3 font-semibold text-white shadow-md transition-all hover:bg-[#1f8c81] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {loadingReports
+              ? "Guardando…"
+              : isSigned
+                ? "Reporte firmado ✓"
+                : "Generar y firmar reporte"}
           </button>
         </div>
+
+        {/* ── Share section (shown after save) ─────────────────────── */}
+        {savedReport && (
+          <div className="rounded-[2rem] border-2 border-[#26a69a]/30 bg-[#26a69a]/5 p-6 shadow-xl">
+            <h2 className="mb-4 text-2xl font-bold text-[#26a69a]">
+              {isSigned ? '✓ Reporte firmado — Compartir con el paciente' : 'Reporte guardado — Compartir con el paciente'}
+            </h2>
+
+            <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">
+              El paciente puede escanear el código QR con la app VisuMed o hacer clic en el enlace para ver el reporte directamente.
+            </p>
+
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              {/* QR Code */}
+              <div className="flex flex-col items-center gap-2">
+                <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                  <img
+                    src={buildQrUrl(buildShareLink(savedReport))}
+                    alt="QR del reporte"
+                    width={220}
+                    height={220}
+                    className="block"
+                  />
+                </div>
+                <p className="text-xs text-slate-500">Escanear con VisuMed App</p>
+              </div>
+
+              {/* Link */}
+              <div className="flex-1 space-y-4">
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-400">
+                    Enlace del reporte
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      readOnly
+                      value={buildShareLink(savedReport)}
+                      className="flex-1 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm font-mono text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-300"
+                    />
+                    <button
+                      onClick={handleCopyLink}
+                      className="rounded-xl border border-[#26a69a] bg-white px-4 py-3 text-sm font-medium text-[#26a69a] hover:bg-[#26a69a]/10 transition-colors dark:bg-transparent"
+                    >
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-white/80 border border-slate-200 p-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300 space-y-1">
+                  <p><span className="font-medium">ID del reporte:</span> <code className="text-xs">{savedReport.id}</code></p>
+                  <p><span className="font-medium">Estado:</span> {savedReport.status === 'signed' ? '✓ Firmado' : 'Borrador'}</p>
+                  <p><span className="font-medium">Creado:</span> {new Date(savedReport.createdAt).toLocaleString('es-MX')}</p>
+                </div>
+
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
+                  <span className="font-semibold">Aviso de responsabilidad:</span> VisuMed no se hace responsable del uso indebido de este enlace ni de con quién sea compartido. Es responsabilidad del médico compartirlo únicamente con el paciente correspondiente.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
 }
+

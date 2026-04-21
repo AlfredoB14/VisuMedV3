@@ -13,22 +13,22 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
 }) => {
   return (
     <div
-      className={`rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] ${className}`}
+      className={`overflow-hidden rounded-3xl border border-[#26a69a]/20 bg-white/90 shadow-sm backdrop-blur-sm dark:border-[#26a69a]/30 dark:bg-slate-900/70 ${className}`}
     >
       {/* Card Header */}
-      <div className="px-6 py-5">
-        <h3 className="text-base font-medium text-gray-800 dark:text-white/90">
+      <div className="px-5 py-4">
+        <h3 className="font-display text-base font-semibold text-slate-800 dark:text-slate-100">
           {title}
         </h3>
         {desc && (
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {desc}
           </p>
         )}
       </div>
 
       {/* Card Body */}
-      <div className="p-4 border-t border-gray-100 dark:border-gray-800 sm:p-6">
+      <div className="border-t border-[#26a69a]/15 p-4 dark:border-[#26a69a]/20 sm:p-5">
         <div className="space-y-6">{children}</div>
       </div>
     </div>

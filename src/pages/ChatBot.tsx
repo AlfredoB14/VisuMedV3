@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, X, ChevronDown, ChevronUp, PlusCircle } from 'lucide-react';
+import { Send, X, ChevronDown, ChevronUp, PlusCircle, Bot } from 'lucide-react';
+import { getBotResponse } from '../utils/ChatBotResponses';
 
 interface Message {
   id: string;
@@ -43,35 +44,13 @@ const ChatBot: React.FC = () => {
     setMessages(prev => [...prev, userMessage]);
     setMessage('');
 
-    // Simulate bot response after a short delay
     setTimeout(() => {
-      let botResponse = '';
       
-      // Simple response logic based on keywords
       const lowerCaseMessage = message.toLowerCase();
-      if (lowerCaseMessage.includes('estudio') || lowerCaseMessage.includes('radiografía') || 
-          lowerCaseMessage.includes('tomografía') || lowerCaseMessage.includes('resonancia')) {
-        botResponse = 'Puedes filtrar por tipo de estudio usando el selector en la barra de búsqueda.';
-      } else if (lowerCaseMessage.includes('paciente') || lowerCaseMessage.includes('buscar')) {
-        botResponse = 'Para buscar un paciente, escribe su nombre o ID en el campo de búsqueda principal.';
-      } else if (lowerCaseMessage.includes('filtro') || lowerCaseMessage.includes('avanzado')) {
-        botResponse = 'Haz clic en "Mostrar filtros avanzados" para acceder a más opciones de filtrado como fecha y médico.';
-      } else if (lowerCaseMessage.includes('fecha')) {
-        botResponse = 'Puedes filtrar por fecha usando los filtros avanzados. Haz clic en "Mostrar filtros avanzados".';
-      } else if (lowerCaseMessage.includes('pendiente') || lowerCaseMessage.includes('nuevo') || 
-                lowerCaseMessage.includes('revisado') || lowerCaseMessage.includes('estado')) {
-        botResponse = 'Puedes filtrar por estado del estudio seleccionando la opción correspondiente en el menú desplegable.';
-      } else if (lowerCaseMessage.includes('hola') || lowerCaseMessage.includes('saludos')) {
-        botResponse = '¡Hola! Soy el asistente virtual del sistema. ¿En qué puedo ayudarte hoy?';
-      } else if (lowerCaseMessage.includes('ayuda') || lowerCaseMessage.includes('ayúdame')) {
-        botResponse = 'Puedo ayudarte con:\n- Búsqueda de pacientes\n- Filtrado de estudios\n- Navegación del sistema\n- Información sobre estados de los estudios';
-      } else {
-        botResponse = 'No estoy seguro de cómo ayudarte con eso. ¿Podrías reformular tu pregunta? Puedo ayudarte con búsquedas, filtros o información sobre el sistema.';
-      }
 
       const newBotMessage: Message = {
         id: Date.now().toString(),
-        text: botResponse,
+        text: getBotResponse(lowerCaseMessage),
         sender: 'bot',
         timestamp: new Date()
       };
@@ -122,32 +101,32 @@ const ChatBot: React.FC = () => {
     <>
       {/* Chat button */}
       <button
-        className="fixed bottom-6 right-6 bg-orange-500 text-white p-4 rounded-full shadow-lg hover:bg-orange-600 transition-all duration-200 z-50"
+        className="fixed bottom-6 right-6 z-50 rounded-full bg-[#26a69a] p-4 text-white shadow-lg transition-all duration-200 hover:bg-[#1f8c81]"
         onClick={toggleChat}
       >
-        {isOpen ? <X size={24} /> : <Send size={24} />}
+        {isOpen ? <X size={24} /> : <Bot size={24} />}
       </button>
 
       {/* Chat window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 bg-white rounded-lg shadow-xl w-96 z-40 transition-all duration-300 flex flex-col border border-gray-200">
+        <div className="fixed bottom-24 right-6 z-40 flex w-96 max-w-[calc(100vw-1.5rem)] max-h-[calc(100dvh-7rem)] flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-2xl transition-all duration-300 dark:border-slate-800 dark:bg-slate-900">
           {/* Chat header */}
-          <div className="bg-green-600 text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
+          <div className="flex items-center justify-between bg-gradient-to-r from-[#26a69a] to-[#1f8c81] px-4 py-3 text-white">
             <h3 className="font-bold">Asistente Virtual</h3>
             <div className="flex gap-2">
-              <button onClick={toggleMinimize} className="hover:bg-green-700 p-1 rounded">
+              <button onClick={toggleMinimize} className="rounded p-1 hover:bg-white/10">
                 {isMinimized ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </button>
-              <button onClick={toggleChat} className="hover:bg-green-700 p-1 rounded">
+              <button onClick={toggleChat} className="rounded p-1 hover:bg-white/10">
                 <X size={18} />
               </button>
             </div>
           </div>
 
           {!isMinimized && (
-            <>
+            <div className="flex min-h-0 flex-1 flex-col">
               {/* Messages container */}
-              <div className="p-4 h-96 overflow-y-auto bg-gray-50">
+              <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50 p-4 dark:bg-slate-950/40">
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
@@ -156,12 +135,12 @@ const ChatBot: React.FC = () => {
                     <div
                       className={`p-3 rounded-lg max-w-xs lg:max-w-md ${
                         msg.sender === 'user'
-                          ? 'bg-orange-500 text-white'
-                          : 'bg-green-100 text-gray-800'
+                          ? 'bg-[#26a69a] text-white'
+                          : 'bg-white text-slate-800 border border-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:border-slate-800'
                       }`}
                     >
                       <p className="whitespace-pre-line">{msg.text}</p>
-                      <p className={`text-xs mt-1 ${msg.sender === 'user' ? 'text-orange-100' : 'text-gray-500'}`}>
+                      <p className={`mt-1 text-xs ${msg.sender === 'user' ? 'text-white/70' : 'text-slate-500'}`}>
                         {formatTime(msg.timestamp)}
                       </p>
                     </div>
@@ -171,13 +150,13 @@ const ChatBot: React.FC = () => {
               </div>
 
               {/* Quick questions */}
-              <div className="px-4 py-2 bg-gray-50 border-t border-gray-200">
-                <p className="text-xs text-gray-500 mb-2">Preguntas frecuentes:</p>
+              <div className="border-t border-slate-200 bg-slate-50 px-4 py-2 dark:border-slate-800 dark:bg-slate-950/40">
+                <p className="mb-2 text-xs text-slate-500">Preguntas frecuentes:</p>
                 <div className="flex flex-wrap gap-2">
                   {commonQuestions.map((question, index) => (
                     <button
                       key={index}
-                      className="text-xs bg-gray-200 hover:bg-gray-300 rounded-full px-3 py-1 text-gray-700 transition-colors"
+                      className="rounded-full bg-slate-200 px-3 py-1 text-xs text-slate-700 transition-colors hover:bg-[#26a69a] hover:text-white"
                       onClick={() => handleQuickQuestion(question)}
                     >
                       {question}
@@ -187,10 +166,10 @@ const ChatBot: React.FC = () => {
               </div>
 
               {/* Input area */}
-              <div className="p-3 border-t border-gray-200 bg-white rounded-b-lg">
+              <div className="border-t border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
                 <div className="relative">
                   <textarea
-                    className="w-full border border-gray-300 rounded-md pl-3 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                    className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 py-2 pl-3 pr-10 outline-none focus:border-[#26a69a] focus:ring-2 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40 dark:text-white"
                     placeholder="Escribe un mensaje..."
                     rows={2}
                     value={message}
@@ -198,20 +177,20 @@ const ChatBot: React.FC = () => {
                     onKeyPress={handleKeyPress}
                   />
                   <button
-                    className="absolute right-2 bottom-2 text-green-600 hover:text-green-800"
+                    className="absolute right-2 bottom-2 text-[#26a69a] hover:text-[#1f8c81]"
                     onClick={handleSendMessage}
                   >
                     <Send size={20} />
                   </button>
                 </div>
-                <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+                <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
                   <span>Presiona Enter para enviar</span>
-                  <button className="flex items-center text-green-600 hover:text-green-800">
+                  <button className="flex items-center text-[#26a69a] hover:text-[#1f8c81]">
                     <PlusCircle size={14} className="mr-1" /> Adjuntar
                   </button>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </div>
       )}

@@ -1,100 +1,128 @@
 import { useState } from "react";
-import { Link } from "react-router";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
+import { ROUTES } from "../../routes/routes";
+import { useAppDispatch } from "../../redux/hooks";
+import { api } from "../../services/instance";
+import { setAuthState } from "../../redux/auth/auth.slice";
 
 export default function SignInForm() {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  const handleLogin = () => {
-    navigate("/home");
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const response = await api.post("/doctors/login/", {
+        email: formData.email,
+        password: formData.password,
+      });
+
+      dispatch(setAuthState({ isAuthenticated: true, doctor: response.data.doctor }));
+      navigate(ROUTES.APP.HOME);
+    } catch (err: any) {
+      setError(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "No se pudo iniciar sesión. Verifica tus credenciales.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="flex flex-col flex-1">
-      <div className="w-full max-w-md pt-10 mx-auto">
+      <div className="mx-auto w-full max-w-md pt-10">
         <Link
           to="/"
-          className="inline-flex items-center text-sm text-[#009975] transition-colors hover:text-[#e98232]"
+          className="inline-flex items-center text-sm text-[#26a69a] transition-colors hover:text-[#1f8c81]"
         >
-          <ChevronLeftIcon className="size-5" />
+          <ChevronLeftIcon />
           Regresa al inicio
         </Link>
       </div>
-      <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
+      <div className="mx-auto flex w-full max-w-md flex-col justify-center flex-1">
         <div>
           <div className="mb-8">
-            <h1 className="mb-3 font-bold text-3xl text-[#009975]">
+            <h1 className="mb-3 font-display text-3xl font-extrabold text-slate-900 dark:text-white">
               Iniciar Sesión
             </h1>
-            <p className="text-gray-600">
+            <p className="text-slate-600 dark:text-slate-400">
               ¡Ingresa tus credenciales para acceder a tu cuenta!
             </p>
           </div>
-          
-          <form className="bg-white p-8 rounded-lg shadow-md">
+
+          <form
+            onSubmit={handleLogin}
+            className="rounded-[2rem] border border-slate-200 bg-white/85 p-8 shadow-2xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80"
+          >
             <div className="space-y-6">
               <div>
-                <Label className="text-[#009975] font-medium">
-                  Correo electrónico <span className="text-[#e98232]">*</span>
+                <Label className="font-medium text-[#26a69a]">
+                  Correo electrónico <span className="text-[#26a69a]">*</span>
                 </Label>
-                <Input 
+                <Input
+                  type="email"
                   placeholder="correo@ejemplo.com"
-                  className="mt-2 w-full p-3 border border-gray-300 rounded-md focus:border-[#009975] focus:ring-1 focus:ring-[#009975]"
+                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 p-3 focus:border-[#26a69a] focus:ring-1 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40"
+                  value={formData.email}
+                  onChange={(e) => { setFormData({ ...formData, email: e.target.value }); setError(''); }}
                 />
               </div>
 
               <div>
-                <Label className="text-[#009975] font-medium">
-                  Contraseña <span className="text-[#e98232]">*</span>
+                <Label className="font-medium text-[#26a69a]">
+                  Contraseña <span className="text-[#26a69a]">*</span>
                 </Label>
                 <div className="relative">
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Ingresa tu contraseña"
-                    className="mt-2 w-full p-3 border border-gray-300 rounded-md focus:border-[#009975] focus:ring-1 focus:ring-[#009975]"
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50/80 p-3 focus:border-[#26a69a] focus:ring-1 focus:ring-[#26a69a]/20 dark:border-slate-700 dark:bg-slate-950/40"
+                    value={formData.password}
+                    onChange={(e) => { setFormData({ ...formData, password: e.target.value }); setError(''); }}
                   />
                   <span
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
                   >
-                    {showPassword ? (
-                      <EyeIcon className="fill-gray-500 size-5" />
-                    ) : (
-                      <EyeCloseIcon className="fill-gray-500 size-5" />
-                    )}
+                    {showPassword ? <EyeIcon /> : <EyeCloseIcon />}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end">
-                <Link
-                  to="/reset-password"
-                  className="text-sm text-[#009975] hover:text-[#e98232] transition-colors"
-                >
-                  ¿Olvidaste tu contraseña?
-                </Link>
-              </div>
+              {error && (
+                <p className="text-sm text-red-500 -mt-2">{error}</p>
+              )}
 
-              <button 
-                type="button"
-                onClick={handleLogin}
-                className="w-full bg-[#009975] hover:bg-[#e98232] text-white font-semibold py-3 rounded-md transition-colors"
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-full bg-[#26a69a] py-3 font-semibold text-white transition-colors hover:bg-[#1f8c81] disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Iniciar Sesión
+                {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
               </button>
             </div>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              ¿No tienes una cuenta? {" "}
+            <p className="text-slate-600 dark:text-slate-400">
+              ¿No tienes una cuenta?{' '}
               <Link
                 to="/signup"
-                className="text-[#009975] hover:text-[#e98232] font-medium transition-colors"
+                className="font-medium text-[#26a69a] transition-colors hover:text-[#1f8c81]"
               >
                 Regístrate
               </Link>

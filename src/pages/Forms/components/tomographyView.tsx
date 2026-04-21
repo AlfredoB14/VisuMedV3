@@ -12,9 +12,14 @@ interface TomographyProps {
     title: string;
     date: string;
     description: string;
+    orthancStudyId?: string;
   };
   onBack: () => void;
 }
+
+const API_BASE =
+  (import.meta.env.VITE_API_URL as string | undefined) ||
+  "https://visumeddjango-production.up.railway.app/api";
 
 interface ViewSettings {
   contrast: number;
@@ -28,6 +33,9 @@ interface Line {
   end: { x: number; y: number };
   measurement: string;
 }
+
+// Fallback study used when no orthancStudyId is passed
+const DEMO_STUDY_ID = "ee44d1f7-6fd75bcb-ae051007-677351ca-759382ea";
 
 export default function TomographyView({ tomography, onBack }: TomographyProps) {
   const [images, setImages] = useState<string[]>([]);
@@ -49,7 +57,7 @@ export default function TomographyView({ tomography, onBack }: TomographyProps) 
   const imagesCache = useRef<Record<number, HTMLImageElement>>({});
   const scrollTimeout = useRef<number | null>(null);
   const isFetching = useRef<boolean>(false);
-  const apiUrl = useRef<string>("https://backendhackaton-production.up.railway.app/api/studies/ee44d1f7-6fd75bcb-ae051007-677351ca-759382ea/images");
+  const studyId = tomography.orthancStudyId || DEMO_STUDY_ID;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [drawing, setDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
@@ -105,8 +113,15 @@ export default function TomographyView({ tomography, onBack }: TomographyProps) 
       setLoading(true);
 
       try {
-        const response = await axios.get<{ images: ImageData[] }>(apiUrl.current);
-        const imageUrls = response.data.images.map((img) => img.imageUrl);
+        const response = await axios.get<{ images: ImageData[] }>(
+          `${API_BASE}/orthanc-proxy/studies/${studyId}/instances/`
+        );
+        // imageUrl from the proxy is a root-relative path (/api/orthanc-proxy/...)
+        // Prefix with the API origin so <img src> loads through the same server
+        const apiOrigin = API_BASE.replace(/\/api$/, "");
+        const imageUrls = response.data.images.map((img) =>
+          img.imageUrl.startsWith("http") ? img.imageUrl : `${apiOrigin}${img.imageUrl}`
+        );
         setImages(imageUrls);
 
         setTimeout(() => {
