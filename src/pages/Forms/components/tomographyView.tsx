@@ -19,7 +19,7 @@ interface TomographyProps {
 
 const API_BASE =
   (import.meta.env.VITE_API_URL as string | undefined) ||
-  "https://visumeddjango-production.up.railway.app/api";
+  "/api";
 
 interface ViewSettings {
   contrast: number;
