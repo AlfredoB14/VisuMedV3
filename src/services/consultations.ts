@@ -10,6 +10,10 @@ const _consultationsService = {
     const response = await api.post<Consultation>(`/consultations/`, consultation);
     return response.data;
   },
+  getConsultationPatient: async (patientId: string) => {
+    const response = await api.get<Consultation[]>(`/patients/${patientId}/consultations/`);
+    return response.data;
+  }
 };
 
 export default _consultationsService;

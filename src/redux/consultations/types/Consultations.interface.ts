@@ -13,7 +13,9 @@ export interface IConsultationUI {
 
 export interface IDoctorsState {
   loading: boolean;
+  error: string | null;
   consultations?: Consultation[];
+  patientConsultation?: Consultation[];
 }
 
 export interface CreateConsultationPayload {

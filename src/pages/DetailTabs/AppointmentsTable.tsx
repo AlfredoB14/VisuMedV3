@@ -3,7 +3,16 @@ import { consultationSelector } from '../../redux/consultations/consultations.se
 import { Consultation } from '../../redux/consultations/types/Consultations.interface';
 
 export const AppointmentsTable = () => {
-    const { consultations } = useSelector(consultationSelector).ui;
+    const { patientConsultation: consultations } = useSelector(consultationSelector).ui;
+
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        const day = date.getDate();
+        const month = date.toLocaleDateString("es-ES", { month: "long" });
+        const year = date.getFullYear();
+      
+        return `${day} de ${month} de ${year}`;
+      };
     return (
                 <div>
                     <div className="rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-xl backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
@@ -35,17 +44,13 @@ export const AppointmentsTable = () => {
                                                 className="transition-colors duration-150 ease-in-out hover:bg-[#26a69a]/8 dark:hover:bg-[#26a69a]/10"
                                             >
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                {new Date(item.scheduledAt).toLocaleDateString('es-ES', {
-                                                    day: 'numeric',
-                                                    month: 'long',
-                                                    year: 'numeric',
-                                                })}
+                                                {formatDate(item.scheduledAt)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                                                {item.status}
+                                                {item.status === 'confirmed' ? 'Confirmada' : 'Cancelada'}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                                                {item.createdAt}
+                                                {formatDate(item.createdAt)}
                                                 </td>
                                             </tr>
                                             ))}

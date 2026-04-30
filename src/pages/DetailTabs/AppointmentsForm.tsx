@@ -1,20 +1,36 @@
-import React, { useState } from 'react'
-import { useAppDispatch } from '../../redux/hooks';
+import { useEffect, useState } from 'react'
+import { useAppDispatch, useAppSelector} from '../../redux/hooks';
 import { createConsultation } from '../../redux/consultations/consultations.action';
 import { selectDoctor } from '../../redux/auth/auth.slice';
 import { useSelector } from 'react-redux';
+import { toast } from 'sonner';
+import { consultationSelector } from '../../redux/consultations/consultations.selector';
 
-export const AppointmentsForm = () => {
-    const [activeTab, setActiveTab] = useState<"see_appointment"|"add_appointment"|"patient_info">("patient_info");
+export const AppointmentsForm = ({ patientId } : {patientId: string}) => {
     const [appointmentDate, setAppointmentDate] = useState("");
     const [appointmentTime, setAppointmentTime] = useState("");
+    const [submitted, setSubmitted] = useState(false);
     const doctor = useSelector(selectDoctor);
-    const dispatch = useAppDispatch()
+    const { error: errorConsultation, loading } = useAppSelector(consultationSelector).ui;
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        if (!submitted) return;
+      
+        if (!loading && !errorConsultation) {
+          toast.success("Consulta creada con éxito.");
+          setAppointmentDate("");
+          setAppointmentTime("");
+          setSubmitted(false);
+        }
+      }, [loading, errorConsultation, submitted]);
 
     const handleSubmitAppointment = () => {
+        setSubmitted(true);
+
         const scheduledAt = new Date(`${appointmentDate}T${appointmentTime}`).toISOString();
         dispatch(createConsultation({
-            patientId: patient.id,
+            patientId: patientId,
             doctorId: doctor ? doctor?.id : "",
             scheduledAt,
             status: "confirmed",
@@ -22,44 +38,8 @@ export const AppointmentsForm = () => {
     }
 
     return (
-        <div>
+    <div>
         <div className="rounded-3xl border border-[#26a69a]/20 bg-white/90 p-5 shadow-sm backdrop-blur-sm dark:border-[#26a69a]/30 dark:bg-slate-900/70 lg:p-6">
-                <div className="mb-8 flex items-center justify-between w-full">
-                    <div className="flex flex-row">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#26a69a] text-xl text-white shadow-sm">
-                            {patient.firstName.charAt(0)}
-                        </div>
-                        <div className="ml-6">
-                            <h2 className="font-display text-2xl font-semibold text-slate-800 dark:text-slate-100">{patient.firstName} {patient.lastName}</h2>
-                            <p className="text-slate-500 dark:text-slate-400">{patient.birthDate}</p>
-                        </div>
-                    </div>
-                    <div className="flex gap-2 w-[50%] justify-end">
-                        <button className=" max-w-[10rem] w-full rounded-full bg-[#26a69a] px-4 py-3 font-medium text-white transition hover:bg-[#1f8c81]" onClick={() => setActiveTab("see_appointment")}>
-                            Ver consultas
-                        </button>
-                        <button className="max-w-[10rem] w-full rounded-full bg-[#26a69a] px-4 py-3 font-medium text-white transition hover:bg-[#1f8c81]" onClick={() => setActiveTab("add_appointment")}>
-                            Registrar consulta
-                        </button>
-                    </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div className="rounded-2xl border border-[#26a69a]/15 bg-white/80 p-4 shadow-sm dark:border-[#26a69a]/20 dark:bg-slate-900/40">
-                        <h3 className="font-medium text-lg mb-2">Información del paciente</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Fecha de alta:</p>
-                            <p className="text-sm font-medium">{new Date(patient.createdAt).toLocaleDateString()}</p>
-                        </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-[#26a69a]/15 bg-white/80 p-4 shadow-sm dark:border-[#26a69a]/20 dark:bg-slate-900/40">
-                        <h3 className="font-medium text-lg mb-2">Resumen médico</h3>
-                            <p className="text-sm text-slate-600 dark:text-slate-300">
-                                Información resumida del historial médico del paciente aparecerá aquí.
-                                Esta es una versión de demostración con información de marcador.
-                            </p>
-                    </div>
-                </div>
                 <div className="rounded-2xl border border-[#26a69a]/15 bg-white/80 p-4 shadow-sm dark:border-[#26a69a]/20 dark:bg-slate-900/40">
                     <h3 className="font-medium text-lg mb-4">Nueva consulta</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -92,7 +72,7 @@ export const AppointmentsForm = () => {
                         </button>
                     </div>
                 </div>
-            </div>
         </div>
+    </div>
     )
 }

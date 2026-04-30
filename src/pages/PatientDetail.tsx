@@ -9,6 +9,8 @@ import { getStudies } from '../redux/studies/studies.action';
 import _reportsService from '../services/reports';
 import { StudiesTab } from './DetailTabs/StudiesTab';
 import { AppointmentsTable } from './DetailTabs/AppointmentsTable';
+import { AppointmentsForm } from './DetailTabs/AppointmentsForm';
+import { getPatientConsultation } from '../redux/consultations/consultations.action';
 
 export default function PatientDetail() {
   const { patientId } = useParams<{ patientId: string }>();
@@ -85,7 +87,10 @@ export default function PatientDetail() {
               Ver estudios
             </button>
             <button
-              onClick={() => setActiveTab("see_appointments")}
+              onClick={() => {
+                setActiveTab("see_appointments")
+                dispatch(getPatientConsultation(patient.id))
+              }}
               className={`rounded-md px-4 py-2 text-sm font-medium transition hover:bg-[#26a69a] hover:text-white transition-all
                 ${
                   activeTab === "see_appointments"
@@ -113,6 +118,7 @@ export default function PatientDetail() {
         {/* ── Studies ──────────────────────────────────────────────── */}
         {activeTab === 'studies' && <StudiesTab />}
         {activeTab === 'see_appointments' && <AppointmentsTable />}
+        {activeTab === 'add_appointments' && <AppointmentsForm patientId={patient.id} />}
       </div>
     </>
   );
