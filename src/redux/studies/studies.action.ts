@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { CreateStudyPayload, OrthancStudy, Study } from "./types/Studies.interface";
+import { CreateStudyPayload, OrthancStudy, Study, VisorStudy } from "./types/Studies.interface";
 import _studiesService from "../../services/studies";
 
 export const createStudy = createAsyncThunk(
@@ -31,5 +31,13 @@ export const getOrthancStudies = createAsyncThunk(
     async () => {
         const response = await _studiesService.getOrthancStudies();
         return response as OrthancStudy[];
+    }
+)
+
+export const getAxialOrthancStudies = createAsyncThunk(
+    "studies/getAxialOrthancStudies",
+    async (orthancId: string) => {
+        const response = await _studiesService.getAxialOrthancStudies(orthancId);
+        return response as VisorStudy;
     }
 )

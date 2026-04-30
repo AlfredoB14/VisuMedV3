@@ -1,96 +1,15 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import axios from "axios";
 import { useSelector } from "react-redux";
-import {
-  ArrowLeftRight, Camera, Circle, ChevronDown, Contrast,
-  LayoutGrid, Move, PenTool, Pencil, RotateCw, RotateCcw,
-  Ruler, Square, ZoomIn, ZoomOut,
-} from "lucide-react";
+import { useAppDispatch } from "../../../redux/hooks";
+import { getAxialOrthancStudies } from "../../../redux/studies/studies.action";
 import { studiesSelector } from "../../../redux/studies/studies.selector";
 import { RootState } from "../../../redux/store";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
-interface ImageData {
-  instanceId?: string;
-  imageUrl: string;
-  pixelSpacing?: unknown;
-  imagerPixelSpacing?: unknown;
-}
-
-type MeasurementMode =
-  | "longitudinal" | "bidirectional" | "annotation"
-  | "ellipse" | "rectangle" | "circle" | "freehand";
-
-type ActiveTool = "pan" | "contrast" | null;
-type LayoutMode = 1 | 2 | 4;
-
-interface NormalizedPoint { x: number; y: number }
-
-interface MeasurementItem {
-  id: string;
-  mode: MeasurementMode;
-  points: NormalizedPoint[];
-  label: string;
-  text?: string;
-}
-
-interface StudyItem {
-  id: string;
-  orthancStudyId: string;
-  modality: string;
-  bodyPart: string;
-  studyDate: string | null;
-  status: string;
-}
-
-interface TomographyProps {
-  tomography: { title: string; date: string; description: string; orthancStudyId?: string };
-  studies?: StudyItem[];
-  onBack: () => void;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Panel state
-// ─────────────────────────────────────────────────────────────────────────────
-interface PanelState {
-  studyId: string | null;
-  images: string[];
-  instanceIds: string[];
-  spacingByInstance: Record<string, { x: number; y: number }>;
-  loading: boolean;
-  loadingProgress: number;
-  currentIndex: number;
-  pixelSpacing: { x: number; y: number } | null;
-  windowWidth: number | null;
-  windowLevel: number | null;
-  panOffset: { x: number; y: number };
-  brightness: number;
-  contrast: number;
-  rotation: number;
-  zoom: number;
-  inverted: boolean;
-  cineActive: boolean;
-  cineFps: number;
-}
-
-const defaultPanel = (): PanelState => ({
-  studyId: null, images: [], instanceIds: [], spacingByInstance: {},
-  loading: false, loadingProgress: 0, currentIndex: 0,
-  pixelSpacing: null, windowWidth: null, windowLevel: null,
-  panOffset: { x: 0, y: 0 },
-  brightness: 256, contrast: 256,
-  rotation: 0, zoom: 1, inverted: false,
-  cineActive: false, cineFps: 10,
-});
+import { ArrowLeftRight, Camera, ChevronDown, Circle, Contrast, LayoutGrid, Move, Pencil, PenTool, RotateCcw, RotateCw, Ruler, Square, ZoomIn, ZoomOut } from "lucide-react";
+import { ActiveTool, defaultPanel, LayoutMode, MeasurementItem, MeasurementMode, NormalizedPoint, PanelState, SinglePanelProps, StudyItem, TomographyProps } from "../VisorTypes/Visor.interface";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
-const API_BASE =
-  (import.meta.env.VITE_API_URL as string | undefined) ||
-  "https://visumeddjango-production.up.railway.app/api";
 const DEMO_STUDY_ID = "ee44d1f7-6fd75bcb-ae051007-677351ca-759382ea";
 
 const MEASURE_COLOR = "#FFD600";
@@ -102,23 +21,6 @@ const HANDLE_R      = 5;
 /** Full CSS filter string for a panel */
 const toFilter = (b: number, c: number, inv: boolean) =>
   `brightness(${((b / 256) * 100).toFixed(1)}%) contrast(${((c / 256) * 100).toFixed(1)}%)${inv ? " invert(1)" : ""}`;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// SinglePanel
-// ─────────────────────────────────────────────────────────────────────────────
-interface SinglePanelProps {
-  panel: PanelState;
-  panelIndex: number;
-  isActive: boolean;
-  activeTool: ActiveTool;
-  measurementMode: MeasurementMode | null;
-  measurementsByImage: Record<string, MeasurementItem[]>;
-  onActivate: () => void;
-  onPanelUpdate: (fn: (p: PanelState) => PanelState) => void;
-  onCommit: (idx: number, item: MeasurementItem) => void;
-  onDelete: (idx: number, id: string) => void;
-  onDrop: (idx: number, studyId: string) => void;
-}
 
 function SinglePanel({
   panel, panelIndex, isActive, activeTool, measurementMode,
@@ -140,6 +42,40 @@ function SinglePanel({
   const isCtrRef     = useRef(false);
   const ctrStart     = useRef({ x: 0, y: 0, b: 256, c: 256 });
   const cineRef      = useRef<number | null>(null);
+
+  const [displayedSrc, setDisplayedSrc] = useState<string | null>(null);
+
+useEffect(() => {
+  const nextSrc = panel.images[panel.currentIndex];
+
+  if (!nextSrc) {
+    setDisplayedSrc(null);
+    return;
+  }
+
+  let cancelled = false;
+  const image = new Image();
+
+  const done = async () => {
+    try {
+      await image.decode?.();
+    } catch {
+      // ignore
+    }
+
+    if (!cancelled) {
+      setDisplayedSrc(nextSrc);
+    }
+  };
+
+  image.onload = done;
+  image.onerror = done;
+  image.src = nextSrc;
+
+  return () => {
+    cancelled = true;
+  };
+}, [panel.images, panel.currentIndex]);
 
   // Cine playback
   useEffect(() => {
@@ -525,7 +461,7 @@ function SinglePanel({
         <div className="relative h-full w-full">
           <img
             ref={imgRef}
-            src={panel.images[panel.currentIndex]}
+            src={displayedSrc ?? panel.images[panel.currentIndex]}
             alt={`Panel ${panelIndex+1}`}
             className="absolute object-contain select-none pointer-events-none"
             style={{
@@ -610,38 +546,171 @@ export default function TomographyView({ tomography, studies, onBack }: Tomograp
     return `${ml[s.modality]??s.modality} — ${s.bodyPart||"Sin especificar"}`;
   },[]);
 
-  const parseSpacing = (v: unknown): {x:number;y:number}|null => {
-    if(!v) return null;
-    if(Array.isArray(v)&&v.length>=2){const x=Number(v[0]),y=Number(v[1]);if(!isNaN(x)&&!isNaN(y))return{x,y};}
-    if(typeof v==="string"){const p=v.split(/[\\,\s]+/).map(Number).filter(n=>!isNaN(n));if(p.length>=2)return{x:p[0],y:p[1]};}
-    return null;
+  const dispatch = useAppDispatch();
+
+  const imageCacheRef = useRef<Map<string, HTMLImageElement>>(new Map());
+  
+  const parseSpacing = (spacing?: number[] | null): { x: number; y: number } | null => {
+    if (!spacing || spacing.length < 2) return null;
+  
+    const [x, y] = spacing;
+  
+    if (Number.isNaN(Number(x)) || Number.isNaN(Number(y))) return null;
+  
+    return {
+      x: Number(x),
+      y: Number(y),
+    };
   };
+  
+  const preloadImage = useCallback((url: string) => {
+    const cached = imageCacheRef.current.get(url);
+  
+    if (cached?.complete) {
+      return Promise.resolve(cached);
+    }
+  
+    return new Promise<HTMLImageElement>((resolve) => {
+      const image = cached ?? new Image();
+  
+      const done = async () => {
+        image.onload = null;
+        image.onerror = null;
+  
+        try {
+          await image.decode?.();
+        } catch {
+          // ignore
+        }
+  
+        imageCacheRef.current.set(url, image);
+        resolve(image);
+      };
+  
+      image.onload = done;
+      image.onerror = done;
+      image.src = url;
+  
+      imageCacheRef.current.set(url, image);
+    });
+  }, []);
+  
+  const preloadAroundIndex = useCallback(
+    async (urls: string[], currentIndex: number, radius = 12) => {
+      if (!urls.length) return;
+  
+      const start = Math.max(0, currentIndex - radius);
+      const end = Math.min(urls.length - 1, currentIndex + radius);
+      const priorityUrls = urls.slice(start, end + 1);
+  
+      await Promise.all(priorityUrls.map((url) => preloadImage(url)));
+    },
+    [preloadImage]
+  );
+  
+  const resetPanelForLoading = useCallback((pidx: number) => {
+    setPanels((prev) => {
+      const next = [...prev];
+  
+      next[pidx] = {
+        ...next[pidx],
+        loading: true,
+        loadingProgress: 0,
+        images: [],
+        instanceIds: [],
+        spacingByInstance: {},
+        currentIndex: 0,
+        pixelSpacing: null,
+        panOffset: { x: 0, y: 0 },
+        brightness: 256,
+        contrast: 256,
+        rotation: 0,
+        zoom: 1,
+        inverted: false,
+        cineActive: false,
+      };
+  
+      return next;
+    });
+  }, []);
+  
+  const fetchForPanel = useCallback(
+    async (pidx: number, studyId: string) => {
+      resetPanelForLoading(pidx);
+  
+      try {
+        const study = await dispatch(getAxialOrthancStudies(studyId)).unwrap();
+  
+        const urls = study.instances.map((instance) => instance.url);
+        const instanceIds = study.instances.map((instance) => instance.instanceId);
+        const pixelSpacing = parseSpacing(study.pixelSpacing);
+  
+        if (urls[0]) {
+          await preloadImage(urls[0]);
+        }
+  
+        setPanels((prev) => {
+          const next = [...prev];
+  
+          next[pidx] = {
+            ...next[pidx],
+            studyId,
+            images: urls,
+            instanceIds,
+            spacingByInstance: {},
+            currentIndex: 0,
+            loading: false,
+            loadingProgress: urls[0] ? 1 : 0,
+            pixelSpacing,
+          };
+  
+          return next;
+        });
+  
+        void preloadAroundIndex(urls, 0, 12);
+      } catch (error) {
+        console.error(error);
+  
+        setPanels((prev) => {
+          const next = [...prev];
+  
+          next[pidx] = {
+            ...next[pidx],
+            loading: false,
+          };
+  
+          return next;
+        });
+      }
+    },
+    [dispatch, preloadImage, preloadAroundIndex, resetPanelForLoading]
+  );
 
-  const fetchForPanel = useCallback(async (pidx: number, studyId: string) => {
-    setPanels(prev=>{const n=[...prev];n[pidx]={...n[pidx],loading:true,loadingProgress:0,images:[],instanceIds:[],spacingByInstance:{},currentIndex:0,pixelSpacing:null,panOffset:{x:0,y:0},brightness:256,contrast:256,rotation:0,zoom:1,inverted:false,cineActive:false};return n;});
-    try {
-      const res = await axios.get<{images:ImageData[]}>(`${API_BASE}/orthanc-proxy/studies/${studyId}/instances/`);
-      const origin=API_BASE.replace(/\/api$/,"");
-      const urls=res.data.images.map(img=>img.imageUrl.startsWith("http")?img.imageUrl:`${origin}${img.imageUrl}`);
-      const ids=res.data.images.map(img=>img.instanceId??"");
-      const sm:Record<string,{x:number;y:number}>={};
-      res.data.images.forEach(img=>{if(!img.instanceId)return;const sp=parseSpacing(img.pixelSpacing)??parseSpacing(img.imagerPixelSpacing);if(sp)sm[img.instanceId]=sp;});
-      setPanels(prev=>{const n=[...prev];n[pidx]={...n[pidx],studyId,images:urls,instanceIds:ids,spacingByInstance:sm,loading:false,pixelSpacing:sm[ids[0]]??null};return n;});
-      // preload
-      let loaded=0; const total=urls.length;
-      const cache:Record<number,HTMLImageElement>={};
-      const preload=(i:number)=>new Promise<void>(r=>{if(cache[i]?.complete){r();return;}const el=cache[i]??new Image();const d=()=>{el.onload=null;el.onerror=null;r();};el.onload=d;el.onerror=d;el.src=urls[i];cache[i]=el;});
-      let cur=0; const conc=Math.min(6,total);
-      const worker=async()=>{while(cur<total){const qi=cur++;await preload(qi);loaded++;setPanels(prev=>{const n=[...prev];n[pidx]={...n[pidx],loadingProgress:Math.floor((loaded/total)*100)};return n;});}};
-      await Promise.all(Array.from({length:conc},()=>worker()));
-    } catch(err){console.error(err);setPanels(prev=>{const n=[...prev];n[pidx]={...n[pidx],loading:false};return n;});}
-  },[]);
+  useEffect(() => {
+    fetchForPanel(0, tomography.orthancStudyId || DEMO_STUDY_ID);
+  }, [fetchForPanel, tomography.orthancStudyId]);
 
-  useEffect(()=>{ fetchForPanel(0, tomography.orthancStudyId||DEMO_STUDY_ID); },[tomography.orthancStudyId]);
-
-  const updatePanel = useCallback((idx:number)=>(fn:(p:PanelState)=>PanelState)=>{
-    setPanels(prev=>{const n=[...prev];n[idx]=fn(n[idx]);return n;});
-  },[]);
+  const updatePanel = useCallback(
+    (idx: number) => (fn: (p: PanelState) => PanelState) => {
+      setPanels((prev) => {
+        const next = [...prev];
+        const previousPanel = next[idx];
+        const updatedPanel = fn(previousPanel);
+  
+        next[idx] = updatedPanel;
+  
+        if (
+          updatedPanel.images.length > 0 &&
+          updatedPanel.currentIndex !== previousPanel.currentIndex
+        ) {
+          void preloadAroundIndex(updatedPanel.images, updatedPanel.currentIndex, 12);
+        }
+  
+        return next;
+      });
+    },
+    [preloadAroundIndex]
+  );
 
   const handleCommit = (pidx:number,item:MeasurementItem)=>{
     const k=`${panels[pidx].studyId}:${panels[pidx].currentIndex}`;
@@ -653,7 +722,12 @@ export default function TomographyView({ tomography, studies, onBack }: Tomograp
     setMeasurementsByImage(prev=>({...prev,[k]:(prev[k]??[]).filter(m=>m.id!==id)}));
   };
 
-  const handleDrop = useCallback((pidx:number,studyId:string)=>{fetchForPanel(pidx,studyId);},[fetchForPanel]);
+  const handleDrop = useCallback(
+    (pidx: number, studyId: string) => {
+      fetchForPanel(pidx, studyId);
+    },
+    [fetchForPanel]
+  );
 
   const handleCapture = useCallback(async()=>{
     const panel=panels[activePanel]; if(!panel.images.length) return;
