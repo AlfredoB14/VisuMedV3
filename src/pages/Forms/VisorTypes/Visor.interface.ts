@@ -4,6 +4,23 @@ export type MeasurementMode =
 
 export type ActiveTool = "pan" | "contrast" | null;
 export type LayoutMode = 1 | 2 | 4;
+export type ViewMode = "axial" | "coronal" | "sagital";
+
+export interface ViewCache {
+  studyId: string | null;
+  images: string[];
+  instanceIds: string[];
+  pixelSpacing: { x: number; y: number } | null;
+  currentIndex: number;
+  panOffset: { x: number; y: number };
+  brightness: number;
+  contrast: number;
+  rotation: number;
+  zoom: number;
+  inverted: boolean;
+  cineActive: boolean;
+  cineFps: number;
+}
 
 export interface NormalizedPoint { x: number; y: number }
 
@@ -38,6 +55,8 @@ export interface PanelState {
     loading: boolean;
     loadingProgress: number;
     currentIndex: number;
+  view: ViewMode;
+  viewCache: Partial<Record<ViewMode, ViewCache>>;
     pixelSpacing: { x: number; y: number } | null;
     windowWidth: number | null;
     windowLevel: number | null;
@@ -54,6 +73,8 @@ export interface PanelState {
 export const defaultPanel = (): PanelState => ({
     studyId: null, images: [], instanceIds: [], spacingByInstance: {},
     loading: false, loadingProgress: 0, currentIndex: 0,
+  view: "axial",
+  viewCache: {},
     pixelSpacing: null, windowWidth: null, windowLevel: null,
     panOffset: { x: 0, y: 0 },
     brightness: 256, contrast: 256,

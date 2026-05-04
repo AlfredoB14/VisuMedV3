@@ -41,3 +41,19 @@ export const getAxialOrthancStudies = createAsyncThunk(
         return response as VisorStudy;
     }
 )
+
+export const getCoronalOrthancStudies = createAsyncThunk(
+    "studies/getCoronalOrthancStudies",
+    async (orthancId: string) => {
+        const response = await _studiesService.getCoronalOrthancStudies(orthancId);
+        return response as VisorStudy;
+    }
+)
+
+export const getSagittalOrthancStudies = createAsyncThunk(
+    "studies/getSagittalOrthancStudies",
+    async (orthancId: string) => {
+        const response = await _studiesService.getSagittalOrthancStudies(orthancId);
+        return response as VisorStudy;
+    }
+)

@@ -21,6 +21,14 @@ const _studiesService = {
   getAxialOrthancStudies: async (orthancId: string) => {
     const response = await api.get<VisorStudy>(`/studies/${orthancId}/images/axial/`);
     return response.data;
+  },
+  getCoronalOrthancStudies: async (orthancId: string) => {
+    const response = await api.get<VisorStudy>(`/studies/${orthancId}/images/coronal/`);
+    return response.data;
+  },
+  getSagittalOrthancStudies: async (orthancId: string) => {
+    const response = await api.get<VisorStudy>(`/studies/${orthancId}/images/sagittal/`);
+    return response.data;
   }
 };
 
