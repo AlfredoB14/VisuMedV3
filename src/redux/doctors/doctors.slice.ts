@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { Doctor, IDoctorsUI } from "../doctors/types/Doctors.interface";
+import { AgendaData, Doctor, IDoctorsUI } from "../doctors/types/Doctors.interface";
 import {
     createDoctor,
+  getDayConsultations,
   getDoctors,
 } from "../doctors/doctors.action";
 
@@ -32,6 +33,16 @@ export const doctorsSlice = createSlice({
         state.ui.loading = false;
       })
       .addCase(createDoctor.rejected, (state) => {
+        state.ui.loading = false;
+      })
+      .addCase(getDayConsultations.pending, (state) => {
+        state.ui.loading = true;
+      })
+      .addCase(getDayConsultations.fulfilled, (state, action) => {
+        state.ui.loading = false;
+        state.ui.agendaData = action.payload as AgendaData;
+      })
+      .addCase(getDayConsultations.rejected, (state) => {
         state.ui.loading = false;
       });
   },

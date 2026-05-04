@@ -1,29 +1,28 @@
 import PageMeta from "../../components/common/PageMeta";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
+import { getDayConsultations } from "../../redux/doctors/doctors.action";
+import { useEffect } from "react";
+import { useAppDispatch } from "../../redux/hooks";
+import { doctorsSelector } from "../../redux/doctors/doctors.selector";
 
-
-interface DoctorSchedule {
-  time: string;
-  activity: string;
-  type: 'appointment' | 'break' | 'meeting';
-}
 
 export default function Home() {
   const doctor = useSelector((state: RootState) => state.auth.doctor);
+  const dispatch = useAppDispatch();
+  const { agendaData } = useSelector(doctorsSelector).ui;
+
+  useEffect(() => {
+    if (doctor) {
+      dispatch(getDayConsultations(doctor.id));
+    }
+  }, [doctor]);
   const currentDate = new Date().toLocaleDateString('es-MX', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
-
-  const todaySchedule: DoctorSchedule[] = [
-    { time: '09:00', activity: 'Junta matutina', type: 'meeting' },
-    { time: '10:00', activity: 'Consultas', type: 'appointment' },
-    { time: '13:00', activity: 'Descanso', type: 'break' },
-    { time: '14:00', activity: 'Consultas', type: 'appointment' },
-  ];
 
   return (
     <>
@@ -48,12 +47,12 @@ export default function Home() {
             <div className="rounded-2xl border border-slate-200 bg-white/85 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 shadow-xl backdrop-blur">
               <h3 className="mb-2 text-sm text-slate-500">Citas de hoy</h3>
               <p className="text-2xl font-bold text-[#26a69a]">
-                {todaySchedule.filter((item) => item.type === "appointment").length}
+                {agendaData?.consultationsToday}
               </p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white/85 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 shadow-xl backdrop-blur">
               <h3 className="mb-2 text-sm text-slate-500">Próxima cita</h3>
-              <p className="text-2xl font-bold text-[#26a69a]">10:00</p>
+              <p className="text-2xl font-bold text-[#26a69a]">{agendaData?.nextConsultationTime}</p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white/85 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80 shadow-xl backdrop-blur">
               <h3 className="mb-2 text-sm text-slate-500">Tiempo disponible</h3>
@@ -80,19 +79,13 @@ export default function Home() {
           <div className="sticky top-6 rounded-[2rem] border border-slate-200 bg-white/85 p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900/80">
             <h2 className="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Agenda de Hoy</h2>
             <div className="space-y-4">
-              {todaySchedule.map((item, index) => (
+              {agendaData?.consultations?.map((item: any, index: number) => (
                 <div key={index} className="flex items-center space-x-4">
                   <div className="w-16 text-sm text-slate-500">{item.time}</div>
                   <div
-                    className={`flex-1 rounded-2xl p-3 ${
-                      item.type === "meeting"
-                        ? "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                        : item.type === "break"
-                          ? "bg-slate-50 text-slate-700 dark:bg-slate-950/40 dark:text-slate-300"
-                          : "bg-[#26a69a]/10 text-[#26a69a]"
-                    }`}
+                    className={`flex-1 rounded-2xl p-3 bg-blue-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200 xs:max-w-[200px] md:max-w-auto overflow-hidden text-ellipsis whitespace-nowrap`}
                   >
-                    {item.activity}
+                    {item.patientName}
                   </div>
                 </div>
               ))}

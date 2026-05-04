@@ -18,3 +18,11 @@ export const createDoctor = createAsyncThunk(
   },
 );
 
+export const getDayConsultations = createAsyncThunk(
+  "clients/getDayConsultations",
+  async (doctorId: string) => {
+    const response = await _doctorsService.getDayConsultations(doctorId);
+    return response;
+  },
+);
+

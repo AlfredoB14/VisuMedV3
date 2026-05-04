@@ -8,6 +8,7 @@ import { CreatePatientPayload } from "../redux/patients/types/Patients.interface
 import { RootState } from "../redux/store";
 import { useNavigate } from "react-router";
 import { patientsSelector } from "../redux/patients/patients.selector";
+import { toast } from "sonner";
 
 const PatientRegistry: React.FC = () => {
   const doctor = useSelector((state: RootState) => state.auth.doctor);
@@ -45,16 +46,22 @@ const PatientRegistry: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
 
-    if (doctor?.id) {
-      dispatch(
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    if (!doctor?.id) return;
+  
+    try {
+      await dispatch(
         createPatient({
           ...formData,
           doctorId: doctor.id,
-        } as CreatePatientPayload),
-      );
+        } as CreatePatientPayload)
+      ).unwrap();
+  
+      toast.success("Paciente creado correctamente");
+  
       setFormData({
         firstName: "",
         lastName: "",
@@ -65,8 +72,15 @@ const PatientRegistry: React.FC = () => {
         birthDate: "",
         address: "",
       });
-      // Reload list to include the new patient
-      setTimeout(loadPatients, 500);
+  
+      loadPatients(); // sin setTimeout
+  
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.error ||
+        error?.message ||
+        "Error al crear el paciente"
+      );
     }
   };
 
