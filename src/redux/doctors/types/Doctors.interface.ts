@@ -16,6 +16,7 @@ export interface IDoctorsUI {
 export interface IDoctorsState {
   loading: boolean;
   doctors?: Doctor[];
+  agendaData?: AgendaData;
 }
 
 export interface CreateDoctorPayload {
@@ -25,4 +26,16 @@ export interface CreateDoctorPayload {
     phone: string;
     role: string;
     passwordHash: string;
+}
+
+export interface AgendaData {
+  doctorId: string;
+  totalConsultationsToda: number,
+  consultationsToday: number,
+  nextConsultationTime: string,
+  consultations: {
+    scheduledAt: string,
+    time: string,
+    patientName: string,
+  }[]
 }

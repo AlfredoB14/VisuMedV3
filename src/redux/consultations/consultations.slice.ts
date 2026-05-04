@@ -1,10 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { Consultation, IConsultationUI } from "./types/Consultations.interface";
-import { createConsultation, getConsultations } from "./consultations.action";
+import { createConsultation, getConsultations, getPatientConsultation } from "./consultations.action";
 
 
 const initialState: IConsultationUI = {
-  ui: { loading: false },
+  ui: { loading: false, error: null },
 };
 
 export const consultationSlice = createSlice({
@@ -22,6 +22,7 @@ export const consultationSlice = createSlice({
         })
         .addCase(getConsultations.rejected, (state) => {
             state.ui.loading = false;
+            state.ui.error = "Error al obtener las consultas."
         })
         .addCase(createConsultation.pending, (state) => {
             state.ui.loading = true;
@@ -31,6 +32,18 @@ export const consultationSlice = createSlice({
         })
         .addCase(createConsultation.rejected, (state) => {
             state.ui.loading = false;
+            state.ui.error = "Error al crear una consulta."
+        })
+        .addCase(getPatientConsultation.pending, (state) => {
+            state.ui.loading = true;
+        })
+        .addCase(getPatientConsultation.fulfilled, (state, action) => {
+            state.ui.loading = false;
+            state.ui.patientConsultation = action.payload as Consultation[];
+        })
+        .addCase(getPatientConsultation.rejected, (state) => {
+            state.ui.loading = false;
+            state.ui.error = "Error al obtener las consultas del paciente."
         })
   },
 });
