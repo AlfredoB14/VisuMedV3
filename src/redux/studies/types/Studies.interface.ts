@@ -37,7 +37,23 @@ export interface IStudiesUI {
 
 export interface IStudiesState {
     loading: boolean;
+    error: string | null;
     studies?: Study[];
     orthancStudies?: OrthancStudy[];
-    error: string | null;
+    visorStudy?: VisorStudy;
+}
+
+export interface VisorStudy {
+    orthancStudyId: string;
+    plane: string;
+    total: number;
+    pixelSpacing: [number, number];
+    instances: VisorInstances[]
+}
+
+export interface VisorInstances {
+    instanceId: string;
+    seriesId: string;
+    url: string;
+    instanceNumber: number;
 }

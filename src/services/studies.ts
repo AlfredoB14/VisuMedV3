@@ -1,5 +1,5 @@
 import { api } from "./instance";
-import { CreateStudyPayload, Study, OrthancStudy } from "../redux/studies/types/Studies.interface";
+import { CreateStudyPayload, Study, OrthancStudy, VisorStudy } from "../redux/studies/types/Studies.interface";
 
 const _studiesService = {
   getStudies: async (params?: {patientId?: string}) => {
@@ -16,6 +16,18 @@ const _studiesService = {
   },
   getOrthancStudies: async () => {
     const response = await api.get<OrthancStudy[]>('/orthanc-proxy/studies/');
+    return response.data;
+  },
+  getAxialOrthancStudies: async (orthancId: string) => {
+    const response = await api.get<VisorStudy>(`/studies/${orthancId}/images/axial/`);
+    return response.data;
+  },
+  getCoronalOrthancStudies: async (orthancId: string) => {
+    const response = await api.get<VisorStudy>(`/studies/${orthancId}/images/coronal/`);
+    return response.data;
+  },
+  getSagittalOrthancStudies: async (orthancId: string) => {
+    const response = await api.get<VisorStudy>(`/studies/${orthancId}/images/sagittal/`);
     return response.data;
   }
 };
