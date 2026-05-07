@@ -8,8 +8,8 @@ const VisuMedLanding: React.FC = () => {
   return (
     <>
       <PageMeta
-        title="Radiance - Software de Tomografía y Gestión"
-        description="Software médico de última generación para tomografías y gestión de pacientes con IA explicativa."
+        title="Radiance"
+        description="Software médico de última generación para estudios médicos y gestión de pacientes con IA explicativa."
       />
 
       <div className="bg-white dark:bg-[#0f172a] text-slate-800 dark:text-slate-200 antialiased font-sans scroll-smooth">
@@ -64,11 +64,11 @@ const VisuMedLanding: React.FC = () => {
                   Software Médico de Última Generación
                 </span>
                 <h1 className="text-5xl lg:text-7xl font-display font-extrabold text-slate-900 dark:text-white leading-[1.1] mb-6">
-                  Software de Tomografía Inteligente: <br />
+                  Software de Estudios Médicos: <br />
                   <span className="text-[#26a69a]">Humanizando el Diagnóstico</span>
                 </h1>
                 <p className="text-lg text-slate-600 dark:text-slate-400 mb-10 max-w-xl mx-auto lg:mx-0">
-                  Optimiza tu flujo clínico con tomografías avanzadas, gestión integral de pacientes y herramientas de análisis en la nube.
+                  Optimiza tu flujo clínico con herramientas avanzadas, gestión integral de pacientes y herramientas de análisis en la nube.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
@@ -130,7 +130,7 @@ const VisuMedLanding: React.FC = () => {
                   <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
                     <span className="material-symbols-outlined text-white text-3xl">view_in_ar</span>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">Visor de Tomografías</h3>
+                  <h3 className="text-xl font-bold mb-2">Visor de Estudios Médicos</h3>
                   <p className="text-white/80">
                     Acceso directo para que el paciente visualice sus estudios en alta definición desde cualquier lugar.
                   </p>
@@ -295,7 +295,7 @@ const VisuMedLanding: React.FC = () => {
                      <span className="text-[#26a69a]">Radiance</span>
                 </div>
                 <p className="text-slate-500 dark:text-slate-400">
-                  Software de análisis de tomografía de próxima generación impulsado por inteligencia artificial para profesionales de la salud.
+                  Software de análisis de estudios médicos de próxima generación impulsado por inteligencia artificial para profesionales de la salud.
                 </p>
                 <div className="flex gap-4">
                   <a className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-[#26a69a] hover:text-white transition-all" href="#">
