@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createStudy, getOrthancStudies, getStudies, updateStudy } from "./studies.action";
-import { IStudiesUI, OrthancStudy, Study } from "./types/Studies.interface";
+import { createStudy, getAxialOrthancStudies, getCoronalOrthancStudies, getOrthancStudies, getSagittalOrthancStudies, getStudies, updateStudy } from "./studies.action";
+import { IStudiesUI, OrthancStudy, Study, VisorStudy } from "./types/Studies.interface";
 
 const initialState: IStudiesUI = {
   ui: { loading: false, error: null },
@@ -61,6 +61,42 @@ export const studiesSlice = createSlice({
       .addCase(getOrthancStudies.rejected, (state) => {
         state.ui.loading = false;
         state.ui.error = "No se pudieron cargar los estudios de Orthanc.";
+      })
+      .addCase(getAxialOrthancStudies.pending, (state) => {
+        state.ui.loading = true;
+        state.ui.error = null;
+      })
+      .addCase(getAxialOrthancStudies.fulfilled, (state, action) => {
+        state.ui.loading = false;
+        state.ui.visorStudy = action.payload as VisorStudy;
+      })
+      .addCase(getAxialOrthancStudies.rejected, (state) => {
+        state.ui.loading = false;
+        state.ui.error = "No se pudieron cargar los estudios."
+      })
+      .addCase(getCoronalOrthancStudies.pending, (state) => {
+        state.ui.loading = true;
+        state.ui.error = null;
+      })
+      .addCase(getCoronalOrthancStudies.fulfilled, (state, action) => {
+        state.ui.loading = false;
+        state.ui.visorStudy = action.payload as VisorStudy;
+      })
+      .addCase(getCoronalOrthancStudies.rejected, (state) => {
+        state.ui.loading = false;
+        state.ui.error = "No se pudieron cargar los estudios."
+      })
+      .addCase(getSagittalOrthancStudies.pending, (state) => {
+        state.ui.loading = true;
+        state.ui.error = null;
+      })
+      .addCase(getSagittalOrthancStudies.fulfilled, (state, action) => {
+        state.ui.loading = false;
+        state.ui.visorStudy = action.payload as VisorStudy;
+      })
+      .addCase(getSagittalOrthancStudies.rejected, (state) => {
+        state.ui.loading = false;
+        state.ui.error = "No se pudieron cargar los estudios."
       })
   },
 });

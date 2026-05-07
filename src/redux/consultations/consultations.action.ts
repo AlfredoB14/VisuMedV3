@@ -19,3 +19,11 @@ export const createConsultation = createAsyncThunk(
   },
 );
 
+export const getPatientConsultation = createAsyncThunk(
+  "patient/getPatientConsultation",
+  async (patientId: string) => {
+    const response = await _consultationsService.getConsultationPatient(patientId)
+    return response;
+  }
+)
+

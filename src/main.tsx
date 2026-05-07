@@ -8,10 +8,12 @@ import { AppWrapper } from "./components/common/PageMeta.tsx";
 import { ThemeProvider } from "./context/ThemeContext.tsx";
 import store from "./redux/store.ts";
 import { Provider } from "react-redux";
+import { Toaster } from "sonner";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider store={store}>
+      <Toaster position="bottom-right" richColors />
       <ThemeProvider>
         <AppWrapper>
           <App />

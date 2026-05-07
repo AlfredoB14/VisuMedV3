@@ -49,16 +49,6 @@ const navItems: NavItem[] = [
     name: "Nuevo Reporte",
     path: "/new-report",
   },
-  {
-    icon: <CalenderIcon />,
-    name: "Agenda",
-    path: "/calendar",
-  },
-  {
-    icon: <ChatIcon />,
-    name: "Asistente IA",
-    path: "/chatbot",
-  },
 ];
 
 
