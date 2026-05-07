@@ -73,6 +73,16 @@ git clone https://github.com/TailAdmin/free-react-tailwind-admin-dashboard.git
    yarn dev
    ```
 
+## Deployment Notes (SPA Routing)
+
+This project uses client-side routing. If deployed on Vercel, direct navigation to routes like `/home` or page refreshes on nested paths can return `404 NOT_FOUND` unless SPA rewrites are configured.
+
+The repository includes a `vercel.json` with a rewrite fallback to `index.html`:
+
+- `/(.*)` → `/index.html`
+
+This ensures all app routes are handled by React Router in production.
+
 ## Components
 
 TailAdmin is a pre-designed starting point for building a web-based dashboard using React.js and Tailwind CSS. The

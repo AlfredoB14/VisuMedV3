@@ -28,6 +28,23 @@ const MEASURE_FILL  = "rgba(255,214,0,0.08)";
 const DRAFT_COLOR   = "#40C4FF";
 const DRAFT_FILL    = "rgba(64,196,255,0.08)";
 const HANDLE_R      = 5;
+interface ImageData {
+  imageUrl: string;
+}
+
+interface TomographyProps {
+  tomography: {
+    title: string;
+    date: string;
+    description: string;
+    orthancStudyId?: string;
+  };
+  onBack: () => void;
+}
+
+const API_BASE =
+  (import.meta.env.VITE_API_URL as string | undefined) ||
+  "/api";
 
 const toFilter = (b: number, c: number, inv: boolean) =>
   `brightness(${((b / 256) * 100).toFixed(1)}%) contrast(${((c / 256) * 100).toFixed(1)}%)${inv ? " invert(1)" : ""}`;
