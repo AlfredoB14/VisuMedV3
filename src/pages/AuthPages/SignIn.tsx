@@ -6,8 +6,8 @@ export default function SignIn() {
   return (
     <>
       <PageMeta
-        title="VisuMed | Inicio de sesión"
-        description="Inicia sesión en tu cuenta de VisuMed"
+        title="Radiance | Inicio de sesión"
+        description="Inicia sesión en tu cuenta de Radiance"
       />
       <AuthLayout>
         <SignInForm />

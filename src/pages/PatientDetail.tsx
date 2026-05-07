@@ -40,7 +40,7 @@ export default function PatientDetail() {
 
   return (
     <>
-      <PageMeta title={`VisuMed | ${patient.firstName} ${patient.lastName}`} description="Detalle de paciente" />
+      <PageMeta title={`Radiance | ${patient.firstName} ${patient.lastName}`} description="Detalle de paciente" />
       <PageBreadcrumb pageTitle={`${patient.firstName} ${patient.lastName}`} />
 
       <div className="mx-auto max-w-5xl space-y-6">

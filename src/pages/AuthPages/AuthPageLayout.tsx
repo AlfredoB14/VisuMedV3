@@ -26,7 +26,7 @@ export default function AuthLayout({ children }: {children: React.ReactNode;}) {
                   <img
                     width={350}
                     src="/images/logo/VisuMedLogo.png"
-                    alt="VisuMed Logo"
+                    alt="Radiance Logo"
                     className="drop-shadow-lg contrast-200"
                   />
                 </Link>

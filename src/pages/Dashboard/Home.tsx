@@ -27,7 +27,7 @@ export default function Home() {
   return (
     <>
       <PageMeta
-        title="Inicio | VisuMed"
+        title="Inicio | Radiance"
         description="Panel principal del doctor"
       />
 

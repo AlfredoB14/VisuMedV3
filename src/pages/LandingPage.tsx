@@ -8,7 +8,7 @@ const VisuMedLanding: React.FC = () => {
   return (
     <>
       <PageMeta
-        title="VisuMed - Software de Tomografía y Gestión"
+        title="Radiance - Software de Tomografía y Gestión"
         description="Software médico de última generación para tomografías y gestión de pacientes con IA explicativa."
       />
 
@@ -23,7 +23,7 @@ const VisuMedLanding: React.FC = () => {
               <div className="w-10 h-10 bg-[#26a69a] rounded-lg flex items-center justify-center text-white">
                 <span className="material-symbols-outlined">biotech</span>
               </div>
-             <span className="text-[#26a69a]">VisuMed</span>
+             <span className="text-[#26a69a]">Radiance</span>
             </div>
 
             {/* Nav Links */}
@@ -236,7 +236,7 @@ const VisuMedLanding: React.FC = () => {
                         <div className="flex items-center gap-2 mb-4">
                           <span className="material-symbols-outlined text-[#26a69a]">smart_toy</span>
                           <span className="text-[10px] font-bold uppercase tracking-wider text-[#26a69a]">
-                            VisuMed Chatbot
+                            Radiance Chatbot
                           </span>
                         </div>
                         <p className="text-sm font-medium text-slate-700 dark:text-slate-200 italic">
@@ -265,7 +265,7 @@ const VisuMedLanding: React.FC = () => {
                 <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
                   <div className="text-center lg:text-left">
                     <h2 className="text-4xl lg:text-5xl font-display font-extrabold text-white mb-6">
-                      Empodera a tus pacientes con VisuMed
+                      Empodera a tus pacientes con Radiance
                     </h2>
                     <p className="text-white/70 max-w-lg text-lg">
                       Agenda tu demo hoy mismo y descubre cómo modernizar tu flujo de trabajo radiológico.
@@ -292,7 +292,7 @@ const VisuMedLanding: React.FC = () => {
                   <div className="w-10 h-10 bg-[#26a69a] rounded-lg flex items-center justify-center text-white">
                     <span className="material-symbols-outlined">biotech</span>
                   </div>
-                     <span className="text-[#26a69a]">VisuMed</span>
+                     <span className="text-[#26a69a]">Radiance</span>
                 </div>
                 <p className="text-slate-500 dark:text-slate-400">
                   Software de análisis de tomografía de próxima generación impulsado por inteligencia artificial para profesionales de la salud.

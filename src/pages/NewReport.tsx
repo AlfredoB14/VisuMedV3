@@ -289,7 +289,7 @@ export default function NewReport() {
 
   return (
     <>
-      <PageMeta title="VisuMed | Nuevo Reporte" description="Generación de nuevo reporte médico" />
+      <PageMeta title="Radiance | Nuevo Reporte" description="Generación de nuevo reporte médico" />
       <PageBreadcrumb pageTitle="Registro de Nuevo Reporte" />
 
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">
@@ -570,7 +570,7 @@ export default function NewReport() {
             </h2>
 
             <p className="mb-4 text-sm text-slate-600 dark:text-slate-300">
-              El paciente puede escanear el código QR con la app VisuMed o hacer clic en el enlace para ver el reporte directamente.
+              El paciente puede escanear el código QR con la app Radiance o hacer clic en el enlace para ver el reporte directamente.
             </p>
 
             <div className="flex flex-col md:flex-row items-center gap-8">
@@ -585,7 +585,7 @@ export default function NewReport() {
                     className="block"
                   />
                 </div>
-                <p className="text-xs text-slate-500">Escanear con VisuMed App</p>
+                <p className="text-xs text-slate-500">Escanear con Radiance App</p>
               </div>
 
               {/* Link */}
@@ -616,7 +616,7 @@ export default function NewReport() {
                 </div>
 
                 <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
-                  <span className="font-semibold">Aviso de responsabilidad:</span> VisuMed no se hace responsable del uso indebido de este enlace ni de con quién sea compartido. Es responsabilidad del médico compartirlo únicamente con el paciente correspondiente.
+                  <span className="font-semibold">Aviso de responsabilidad:</span> Radiance no se hace responsable del uso indebido de este enlace ni de con quién sea compartido. Es responsabilidad del médico compartirlo únicamente con el paciente correspondiente.
                 </div>
               </div>
             </div>

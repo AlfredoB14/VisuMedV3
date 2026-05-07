@@ -6,8 +6,8 @@ export default function SignUp() {
   return (
     <>
       <PageMeta
-        title="VisuMed | Crear cuenta"
-        description="Crea tu cuenta de médico en VisuMed"
+        title="Radiance | Crear cuenta"
+        description="Crea tu cuenta de médico en Radiance"
       />
       <AuthLayout>
         <SignUpForm />
