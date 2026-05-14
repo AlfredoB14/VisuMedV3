@@ -25,7 +25,7 @@ export default function AuthLayout({ children }: {children: React.ReactNode;}) {
                 <Link to="/" className="block mb-8">
                   <img
                     width={350}
-                    src="/images/logo/VisuMedLogo.png"
+                    src="/images/logo/RadianceLogo.png"
                     alt="Radiance Logo"
                     className="drop-shadow-lg contrast-200"
                   />

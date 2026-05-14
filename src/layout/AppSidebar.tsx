@@ -246,12 +246,12 @@ const AppSidebar: React.FC = () => {
             <>
               <img
                 className="dark:hidden"
-                src="/images/logo/VisuMedLogoSide.png"
+                src="/images/logo/RadianceLogo.png"
                 alt="Logo"
               />
               <img
                 className="hidden dark:block"
-                src="/images/logo/VisuMedLogo.png"
+                src="/images/logo/RadianceLogo.png"
                 alt="Logo"
                 width={150}
                 height={40}
@@ -259,7 +259,7 @@ const AppSidebar: React.FC = () => {
             </>
           ) : (
             <img
-              src="/images/logo/IconSaludDigna.png"
+              src="/images/logo/IconRadiance.png"
               alt="Logo"
               width={32}
               height={32}
